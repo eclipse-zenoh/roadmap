@@ -25,8 +25,6 @@ body:
       placeholder: E.g. users will be able to install Python API bindings using pip or compiling it from source.
     validations:
       required: true
-  - type: textarea
-    id: labels
+  - type: markdown   
     attributes:
-      label: Labels
-      description: Tag this issue with all the relevant labels on the dropdown menu on the right.
+      value: Tag this issue with all the relevant labels on the dropdown menu on the right.
