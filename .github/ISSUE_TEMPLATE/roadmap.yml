@@ -4,8 +4,9 @@ body:
   - type: markdown   
     attributes:
       value: |
-        *- Remember to tag this issue with all the relevant labels on the right.*
-        *- Remember to associated the Roadmap project on the right.*
+        *Remeber to:
+        *- tag this issue with all the relevant labels on the right*
+        *- associate this issue with the Roadmap project on the right*
   - type: textarea
     id: summary
     attributes:
