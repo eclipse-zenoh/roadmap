@@ -2,7 +2,6 @@ name: New roadmap item
 description: Reserved to the Zenoh team.
 title: ""
 labels: []
-
 body:
   - type: textarea
     id: summary
@@ -12,7 +11,6 @@ body:
       placeholder: E.g. there is no Python API binding.
     validations:
       required: true
-
   - type: textarea
     id: outcome
     attributes:
@@ -21,7 +19,6 @@ body:
       placeholder: E.g. users will be able to use Python to interact with zenoh via a dedicated API binding.
     validations:
       required: true
-
   - type: textarea
     id: how
     attributes:
