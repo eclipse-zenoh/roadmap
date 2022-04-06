@@ -27,4 +27,5 @@ body:
       required: true
   - type: markdown   
     attributes:
-      value: Tag this issue with all the relevant labels on the dropdown menu on the right.
+      value: |
+        *Remember to tag this issue with all the relevant labels on the dropdown menu on the right.*
