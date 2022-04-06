@@ -1,0 +1,32 @@
+name: New roadmap item
+description: Reserved to the Zenoh team.
+title: ""
+labels: []
+
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear and concise description of what kind of problem the new roadmap item aims to solve.
+      placeholder: E.g. there is no Python API binding.
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Intended outcome
+      description: A clear and concise description of what you want to happen once the roadmap item is shipped.
+      placeholder: E.g. users will be able to use Python to interact with zenoh via a dedicated API binding.
+    validations:
+      required: true
+
+  - type: textarea
+    id: how
+    attributes:
+      label: How will it work?
+      description: A clear and concise description of how the roadmap item can be used once shipped.
+      placeholder: E.g. users will be able to install Python API bindings using pip or compiling it from source.
+    validations:
+      required: true
