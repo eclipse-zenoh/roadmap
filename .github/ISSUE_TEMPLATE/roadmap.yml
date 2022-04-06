@@ -1,7 +1,5 @@
 name: New roadmap item
 description: Reserved to the Zenoh team.
-title: ""
-labels: []
 body:
   - type: textarea
     id: summary
