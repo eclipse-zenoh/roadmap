@@ -1,6 +1,7 @@
-[![Discord](https://img.shields.io/badge/chat-on%20discord-blue)](https://discord.gg/vSDSpqnbkm)
+<img src="https://raw.githubusercontent.com/eclipse-zenoh/zenoh/master/zenoh-dragon.png" height="150">
 
-<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/b92fe8ae-5a7d-4df2-b809-d01c2f3a8274/Zenoh_-_dark.svg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220406%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220406T072909Z&X-Amz-Expires=86400&X-Amz-Signature=b8924eff71dfac41489dcc8b773bcf4c716932663c8c0b830297d137acc55ab1&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Zenoh%2520-%2520dark.svg%22&x-id=GetObject" height="150">
+[![Discussion](https://img.shields.io/badge/discussion-on%20github-blue)](https://github.com/eclipse-zenoh/roadmap/discussions)
+[![Discord](https://img.shields.io/badge/chat-on%20discord-blue)](https://discord.gg/vSDSpqnbkm)
 
 # Zenoh public roadmap
 
