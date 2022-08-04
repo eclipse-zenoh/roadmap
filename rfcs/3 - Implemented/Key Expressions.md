@@ -82,7 +82,7 @@ DSLs sections start with `$`, and may be contained anywhere *within* a chunk. Th
 
 For now, only a single DSL is supported:
 
-### `$*` the sub-chunk equivalent of `*`
+### `$*`: the sub-chunk equivalent of `*`
 `$*` behaves just like `*`, as an equivalent to the `[^/]*` regular expression. However, unlike `*`, `$*` may be preceded and/or followed by any character.
 
 Historical users who were accustomed to `*` being able to do exactly that may be surprised, so here's why `$*` was split from `*`'s new restricted role:
