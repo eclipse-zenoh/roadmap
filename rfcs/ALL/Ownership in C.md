@@ -53,13 +53,14 @@ In those specific cases, you have two choices:
 - If you want to keep the value for later, or pass it onto a channel, you can *steal* the value from Zenoh by dereferencing it into your own stack, and writing that type's gravestone into the passed parameter (`z_X_null()` constructs the gravestone for `z_owned_X_t`; if it is missing of your application, please let us know). That way, Zenoh will know not to dropped it (more accurately, it will forget about the value it should have dropped), and you get to keep the value without having to make a deep copy. Be aware that as you now have a `z_owned` value on your stack, it is now your responsibility to destroy it.
 
 ## Some examples
-This function will move the configuration (the caller is no longer responsible for it), returning a session that the caller is now responsible for:
 ```c
 z_owned_session_t z_open(z_owned_config_t *config);
 ```
+This function will move the configuration (the caller is no longer responsible for it), returning a session that the caller is now responsible for:
 
-Trickier: this function takes a mutable pointer zs, but since it's to a `z_session_t` (a loan type), whoever aliased a `z_owned_session_t` into `zs` is still responsible for dropping it. It also takes a `z_keyexpr_t` by value: again, a loan type, so whoever aliased something (`z_keyexpr_t` can be constructed by aliasing a string, not just by aliasing a `z_owned_keyexpr_t`) into that `z_keyexpr_t` is still responsible for that something.
+
 ```c
 char *z_keyexpr_resolve(z_session_t *zs, z_keyexpr_t keyexpr);
 ```
+This function is a bit trickier: it takes a mutable pointer zs, but since it's to a `z_session_t` (a loan type), whoever aliased a `z_owned_session_t` into `zs` is still responsible for dropping it. It also takes a `z_keyexpr_t` by value: again, a loan type, so whoever aliased something (`z_keyexpr_t` can be constructed by aliasing a string, not just by aliasing a `z_owned_keyexpr_t`) into that `z_keyexpr_t` is still responsible for that something.
 And since the return type is `char*`, the caller is now responsible for calling `free` on the return value.
