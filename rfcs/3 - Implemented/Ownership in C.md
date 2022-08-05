@@ -1,1 +1,0 @@
-ALL/Ownership in C.md

@@ -75,8 +75,6 @@ For example, `a/*/b`...
 
 Note that in a Zenoh network, publishing a `DELETE` on `**` is equivalent to performing a `rm -rf /` on linux, since `**` includes every possible key.
 
-By convention, publishing a `PUT` on a wild KE will result in changing the value of all existing key-value pairs where the key matches the KE, but unlike `PUT`s on simple keys, will not create new key-value pairs in long-term storage. This convention is in place because it allows maintaining Zenoh's consistency properties with a lower risk of accidentally creating virtual key-value pairs that couldn't be cleaned up.
-
 ## Extensibility: DSLs
 To allow finer grained sets to be defined, Zenoh provides Domain Specific Languages.
 
@@ -84,7 +82,7 @@ DSLs sections start with `$`, and may be contained anywhere *within* a chunk. Th
 
 For now, only a single DSL is supported:
 
-### `$*`: the sub-chunk equivalent of `*`
+### `$*` the sub-chunk equivalent of `*`
 `$*` behaves just like `*`, as an equivalent to the `[^/]*` regular expression. However, unlike `*`, `$*` may be preceded and/or followed by any character.
 
 Historical users who were accustomed to `*` being able to do exactly that may be surprised, so here's why `$*` was split from `*`'s new restricted role:
@@ -119,3 +117,8 @@ To ensure the very useful *unicity* property, key expressions have a canon form.
 Non canon forms are forbidden on a Zenoh network, and the expected behaviour if one makes it onto the network is for the next router to drop the message associated with it.
 
 Zenoh's APIs are designed so that the Key Expressions your provide are validated, returning errors if they were not valid. To ensure your KE string is only validated once, construct a `KeyExpr` from it, and use that `KeyExpr` whenever possible. If you're certain that your string is a valid KE, you may use unsafe constructors to bypass these checks.
+
+
+## Culture induced performance bias
+The Zenoh team working mainly in English and coming from cultures that mostly use left-to-right writing systems, Zenoh's internals are typically developped under the assumption that higher variance parts of the key-space will be the part at higher pointer values within the string.
+Not following this assumption might result in reduced performance compared to following it.
