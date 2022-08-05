@@ -43,4 +43,11 @@ If the returned pointer is `const`, `free`ing it would be a mistake, as the `con
 
 Otherwise, you are free to, and should, deallocate that string with `free`, as any raw pointer returned by `zenoh-c` and `zenoh-pico` MUST be libc-allocated.
 
+## How does this affect my callbacks?
+Some of Zenoh's operation take callbacks. In some cases, these callback's signatures take a mutable pointer to an owned value as parameter.
+
+In those specific cases, you have two choices:
+- If you only need the value during the scope of your callback, you can just use the value as you would an immutable reference. Zenoh will ensure that the value is properly destroyed as soon as your callback exits (or may reuse the allocation for future calls to your callback).
+- If you want to keep the value for later, or pass it onto a channel, you can *steal* the value from Zenoh by dereferencing it into your own stack, and writing that type's gravestone into the passed parameter. That way, Zenoh will know not to dropped it (more accurately, it will forget about the value it should have dropped), and you get to keep the value without having to make a deep copy. Be aware that as you now have a `z_owned` value on your stack, it is now your responsibility to destroy it.
+
 ## Some examples
