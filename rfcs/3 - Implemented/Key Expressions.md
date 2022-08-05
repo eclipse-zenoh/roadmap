@@ -75,6 +75,8 @@ For example, `a/*/b`...
 
 Note that in a Zenoh network, publishing a `DELETE` on `**` is equivalent to performing a `rm -rf /` on linux, since `**` includes every possible key.
 
+By convention, publishing a `PUT` on a wild KE will result in changing the value of all existing key-value pairs where the key matches the KE, but unlike `PUT`s on simple keys, will not create new key-value pairs in long-term storage. This convention is in place because it allows maintaining Zenoh's consistency properties with a lower risk of accidentally creating virtual key-value pairs that couldn't be cleaned up.
+
 ## Extensibility: DSLs
 To allow finer grained sets to be defined, Zenoh provides Domain Specific Languages.
 
