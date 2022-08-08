@@ -1,6 +1,6 @@
 # Selectors
 ## Preface
-With [Key Expressions](./Key%20Expressions.md), Zenoh provides a way to act on a lot of data through a single operation.
+With [Key Expressions](../Key%20Expressions.md), Zenoh provides a way to act on a lot of data through a single operation.
 
 The original goal of selectors was to allow selecting data not just through their keys, but also through their value (when the data is stored in a self-describing manner, or when the queryable is able to interpret the data).
 
