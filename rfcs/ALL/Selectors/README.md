@@ -49,6 +49,7 @@ There are multiple goals for this:
 
 Here are the currently standardized keys:
 * [`_time`](./_time.md), a way to select data according to the instant it relates to.
+
 Here are some of the initiatives we are working on:
 * [`_filter`](./_filter.md), a way to select data according to predicates on its value.
 * [`_project`](./_project.md), a way to only transmit part of the selected data.
