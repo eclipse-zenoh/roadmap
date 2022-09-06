@@ -17,15 +17,15 @@ and an similar Zenoh Selector:
 ```
 path/**/something ? arg1=val1&arg2=value%202
 ^               ^   ^                      ^
-|Key Expression-| ? |--- value selector ---|
+|Key Expression-| ? |----- parameters -----|
 ```
 
 As you can see, Zenoh selectors are basically URLs without protocol and hostname, since the protocol is Zenoh, and the hostname is irrelevant in a Named Data Network.
 
 In fact, this is is leveraged by Zenoh's REST API, where HTTP request to `https://my.zenoh.router:8000 / <Selector>` get turned into the equivalent Zenoh operation on that Selector, if your zenoh router has a [rest plugin](https://github.com/eclipse-zenoh/zenoh/tree/master/plugins/zenoh-plugin-rest) enabled and listening on port 8000.
 
-## The value selector
-The value selector functions just like query parameters:
+## The parameters
+The selector's `parameters` section functions just like query parameters:
 * It's separated from the path (Key Expr) by a `?`.
 * It's a `?` list of key-value pairs.
 * The first `=` in a key-value pair separates the key from the value.
@@ -33,10 +33,10 @@ The value selector functions just like query parameters:
 * The selector is assumed to be url-encoded: any character can be escaped using `%<charCode>`.
 
 There are however some additional conventions:
-* Duplicate keys are considered Undefined Behaviour, but the tools we provide for selector interpretation will always check for duplicates of the interpreted keys, returning errors when they arise.
+* Duplicate keys are considered Undefined Behaviour; but the recommended behaviour (implemented by the tools we provide for selector interpretation) is to check for duplicates of the interpreted keys, returning errors when they arise.
 * The Zenoh Team considers any key that does not start with an ASCII alphabetic character reserved.
 * Since Zenoh operations may be distributed over diverse networks, we encourage queryable developpers to use some prefix in their custom keys to avoid collisions.
-* When interpreting a key-value pair as a boolean, the absence of the key-value pair, or the value being `false` are the only "falsey" values: in the previous examples, the `kenobi` boolean is considered truthy.
+* When interpreting a key-value pair as a boolean, the absence of the key-value pair, or the value being `"false"` are the only "falsey" values: in the previous examples, the both `hello` and `kenobi` would be considered truthy if interpreted as boolean.
 
 ## Reserved Keys
 ### The Zenoh Namespace
