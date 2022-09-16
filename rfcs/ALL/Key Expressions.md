@@ -105,6 +105,10 @@ The Zenoh team plans to introduce more complex DSLs in the future. However, thes
 
 KEs containing DSLs WILL put more strain on your Zenoh infrastructure than KEs that don't, so we advise designing your key space such that they don't become necessary. For example, avoid `factory-12/room-10/robot-9`, favoring `factory/12/room/10/robot/9`, as `factory/12/room/10/robot/*` will put less strain on your infrastructure than `factory-12/room-10/robot-$*`.
 
+## Adminspace
+
+As a convention, Zenoh team uses key expressions starting with `@` chunk to transmit control data in Zenoh.
+
 ## Canon forms
 Wilds and DSLs by themselves introduce the possibility of multiple strings defining the same sets.
 
