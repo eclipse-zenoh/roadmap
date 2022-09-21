@@ -41,7 +41,7 @@ They are inspired by globs, and looking at a few examples should give you a good
 Like their names suggest, wild chunks are specific chunks, and not patterns that may appear inside a chunk: they may be preceded and followed *only* by `/`.
 
 ### `*`: single wild
-`*` expresses "exactly one chunk of any value", and is equivalent to the `[^/]*` regular expression.  
+`*` expresses "exactly one chunk of any value", and is equivalent to the `[^/]+` regular expression.  
 
 For example, `a/*/b`...
 * Includes:
