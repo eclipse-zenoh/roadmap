@@ -2,7 +2,7 @@
 ## Preface
 Zenoh being distributed by nature, any query (performed through the `get` operation) is susceptible to receive multiple responses sharing the same key. However, queriers are often only interested in the latest value for each key in the response, and are only interested in receiving it once.
 
-We call the process of ignoring duplicate and/or obsolete values *consolidation*. To avoid each querier re-implementing it, as well as to provide efficiencies that couldn't be applied by a querier otherwise, Zenoh provides it through *consolidation modes*.
+We call the process of ignoring duplicate and/or obsolete values for a same key *consolidation*. To avoid each querier re-implementing it, as well as to provide efficiencies that couldn't be applied by a querier otherwise, Zenoh provides it through *consolidation modes*.
 
 ## Consolidation Modes
 ### None
