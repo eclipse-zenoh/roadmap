@@ -6,7 +6,7 @@ The zenoh `Subscriber` accepts a `Reliability` option. When set to `Reliable`, t
 
 This offers reliable communications from `Publishers` to matching `Subscribers` in a stable zenoh infrastructure. But, in case of failures (zenoh router crash) or topology changes (redeployment of routers, etc...) some samples may be lost in the process. 
 
-Zenoh has been designed to be highly scalable and to offer many-to-many pub/sub communications in wide systems. That's one fo the reasons why a zenoh `Publisher` rarely knows the complete list of matching `Subscribers` in the system nor a zenoh `Subscriber` knows it's matching `Publishers`. Setting up reliability channels for all matching `Publisher`/`Subscriber` pair in the system would break this scalability and apply a lot of pressure on both `Publishers` and `Subscribers`.
+Zenoh has been designed to be highly scalable and to offer many-to-many pub/sub communications in wide systems. That's one fo the reasons why a zenoh `Publisher` rarely knows the complete list of matching `Subscribers` in the system nor a zenoh `Subscriber` knows it's matching `Publishers`. Setting up reliability channels for all matching `Publisher`/`Subscriber` pairs in the system would break this scalability and apply a lot of pressure on both `Publishers` and `Subscribers`.
 
 The **Missed Samples Recovery** feature provides a way to achieve reliable communication from `Publishers` to matching `Subscribers` even in case of failures or topology changes while remaining as much scalable as possible. In particular, while the state to be maintained in `Subscribers` is still proportional to the number of matching `Publishers`, the state to be maintained in `Publishers` is independent from the number of `Subscribers`. The reliability state (cache) can even be completely removed from constrained `Publishers` and deported to key places in the system. The feature does not require the transmission of any extra control messages (AckNacks, heartBeats) in stable situation (when there is no loss). Extra messages are only required on missed samples detection.
 
@@ -18,7 +18,7 @@ The Missed Samples Recovery functionnality allows to:
 * Store published samples in a `PublicationCache` on the publisher side and/or anywhere in the network.
 * Detect and query missed samples on the subscriber side.
 
-A prototype of the functionnality is available in the `zenoh-ext` crate. It is compatible with classic zenoh pub/sub. A `ReliableSubscriber` can receive data from a classic zenoh `Publisher` and a classiv zenoh `Subscriber` can receive data from a `ReliablePublisher`.
+A prototype of the functionnality is available in the `zenoh-ext` crate. It is compatible with classic zenoh pub/sub. A `ReliableSubscriber` can receive data from a classic zenoh `Publisher` and a classic zenoh `Subscriber` can receive data from a `ReliablePublisher`.
 
 ## The `SourceInfo` metadata
 
