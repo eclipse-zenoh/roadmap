@@ -6,3 +6,4 @@ These RFCs are currently under discussion:
   - [`_project`](./ALL/Selectors/_project.md)
 - [Missed Samples Recovery](./ALL/Missed%20Samples%20Recovery.md)
 - [Query Payload](./ALL/Query%20Payload.md)
+- [Connectivity Status and Events](./ALL/Connectivity%20Status%20and%20Events.md)
