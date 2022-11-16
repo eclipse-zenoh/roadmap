@@ -46,8 +46,7 @@ The `GetBuilder` has 2 functions that allow to attach a `Value` to the query:
 pub fn with_value<IntoValue>(mut self, value: IntoValue) -> Self
 where IntoValue: Into<Value>;
 
-pub fn with_value_opt<IntoValue>(mut self, value: Option<IntoValue>)  -> Self
-where IntoValue: Into<Value>;
+pub fn take_value<IntoValue>(mut self)  -> (Self, Option<Value>);
 ```
 
 The `Query` struct (received by `Queryables`) has a function to access the optionally attached `Value`:
