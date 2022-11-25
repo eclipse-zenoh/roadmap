@@ -1,9 +1,7 @@
 # Connectivity Status and Events
 
-<div style="background: #FFF5D6; padding: 3px; margin-bottom: 5px; font-size: 0.875rem;">
-  <span class="emoji">🔬</span> <b>Unstable</b><br/>
-  The resource keys and value formats defined in this document are <b>unstable</b>. They may change it in a future release.
-</div>
+> 🔬 **Unstable**<br/>
+> The resource keys and value formats defined in this document are **unstable**. They may change it in a future release.
 
 The Zenoh `Session` provides to the application layer:
 - access to the current connectivity status of a Zenoh `Session`:
