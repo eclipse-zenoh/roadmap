@@ -23,11 +23,21 @@ In the case of a network partition, the Zenoh applications that still have conne
 
 ## Multiple liveliness tokens on the same key
 
-If one or multiple Zenoh applications declare multiple liveliness tokens on the same key, the token will be seen as *alive* as asson as the first declaration occurs and will be seen as *dropped* when the last token is dropped. 
+If one or multiple Zenoh applications declare multiple liveliness tokens on the same key, the token will be seen as *alive* as soon as the first declaration occurs and will be seen as *dropped* when the last token is dropped. 
+
+## The Liveliness struct
+
+All liveliness related functions are gathered in a `Liveliness` struct that can be accessed through a `liveliness`funtion on the Zenoh `Session.
+
+**Example:**
+```rust
+let session = zenoh::open(Config::default()).res().unwrap();
+let liveliness = session.liveliness();
+```
 
 ## Declaring liveliness tokens
 
-A liveliness token can be declared on any key expression with the help of the `Session` `declare_liveliness` function:
+A liveliness token can be declared on any key expression with the help of the `declare_liveliness` function of the `Liveliness` struct:
 
 ```rust
 pub fn declare_liveliness<'a, 'b, TryIntoKeyExpr>(
@@ -40,6 +50,7 @@ pub fn declare_liveliness<'a, 'b, TryIntoKeyExpr>(
 ```rust
 let session = zenoh::open(Config::default()).res().unwrap();
 let token = session
+    .liveliness()
     .declare_liveliness("group1/member1")
     .res()
     .unwrap();
@@ -51,6 +62,7 @@ A liveliness token can be explicitely undeclared or dropped.
 ```rust
 let session = zenoh::open(Config::default()).res().unwrap();
 let token = session
+    .liveliness()
     .declare_liveliness("group1/member1")
     .res()
     .unwrap();
@@ -59,67 +71,79 @@ token.undeclare();
 
 ## Querying liveliness tokens
 
-Each *alive* token can be accessed through queries at any pont in the system with the key prefix `@/liveliness`. So a token with key `group1/member1` is accessible in key `@/liveliness/group1/member1` and all *alive* tokens in the system can be accessed with the following key expression: `@/liveliness/**`.
+Each *alive* token can be accessed through queries at any pont in the system with the help of the `get` funtion of the `Liveliness`struct:
 
-### Example
-
-Using the `z_get` example: 
-
-```bash
-$ z_get -s @/liveliness/**
-Opening session...
-Sending Query '@/liveliness/**'...
->> Received ('@/liveliness/group1/member1': '')
+**Example:**
+```rust
+let session = zenoh::open(Config::default()).res().unwrap();
+let tokens = session
+    .liveliness()
+    .get("group1/*")
+    .res()
+    .unwrap();
+while let Ok(token) = tokens.recv() {
+    match token.sample {
+        Ok(sample) => println!("Alive token ('{}')", sample.key_expr.as_str(),),
+        Err(err) => println!("Received (ERROR: '{}')", String::try_from(&err).unwrap()),
+    }
+}
 ```
 
 ## Notifications of liveliness changes
 
-Each time a liveliness token is declared on a given key (assume `group1/member1`), a `put` is sent to matching subscribers:
-- key: `@/liveliness/group1/member1`
-- kind: `Put`
-- value: empty
+The liveliness changes can be monitored with the help of the `declare_subscriber` function of the `Liveliness` struct.
 
-Each time a liveliness token is *dropped* (because the application that declared it stopped, crashed or loosed connectivity), a `delete` is sent to matching subscribers:
-- key: `@/liveliness/group1/member1`
-- kind: `Delete`
-- value: empty
+Each time a new liveliness token is declared a matching liveliness subscriber will receive a `Sample` with kind `Put`.
 
-### Example
+Each time a liveliness token is *dropped* (because the application that declared it stopped, crashed or loosed connectivity), a matching liveliness subscriber will receive a `Sample` with kind `Delete`.
 
-Using the `z_sub` example: 
-
-```bash
-$ z_sub -k @/liveliness/**
-Opening session...
-Declaring Subscriber on '@/liveliness/**'...
-Enter 'q' to quit...
->> [Subscriber] Received PUT ('@/liveliness/group1/member1': '')
->> [Subscriber] Received DELETE ('@/liveliness/group1/member1': '')
+**Example:**
+```rust
+let session = zenoh::open(Config::default()).res().unwrap();
+let subscriber = session
+    .liveliness()
+    .declare_subscriber("group1/*")
+    .res()
+    .unwrap();
+while let Ok(change) = subscriber.recv() {
+    match change.kind {
+        SampleKind::Put => println!(
+            "Alive token ('{}')", change.key_expr.as_str()),
+        SampleKind::Delete => println!(
+            "Dropped token ('{}')", change.key_expr.as_str()),
+    }
+}
 ```
 
 ## Using the `QueryingSubscriber`
 
 When monitoring liveliness changes by declaring a `Subscriber`, the `Subscriber` only receives changes that occured after it's declaration. In particular, the `Subscriber` will not see liveliness tokens declared before the `Subscriber` declaration. In order to access liveliness tokens declared before the `Subscriber` declaration as well as future connectivity changes, a `zenoh-ext` `QueryingSubscriber` can be used.
 
-### Example
-
-Using the `z_query_sub` example:
-
-```bash
-$ z_query_sub -k @/liveliness/**
-Opening session...
-Declaring QueryingSubscriber on @/liveliness/** with an initial query on @/liveliness/**
-Enter 'd' to issue the query again, or 'q' to quit...
->> [Subscriber] Received PUT ('@/liveliness/group1/member1': '')
->> [Subscriber] Received DELETE ('@/liveliness/group1/member1': '')
+**Example:**
+```rust
+let session = zenoh::open(Config::default()).res().unwrap();
+let subscriber = session
+    .liveliness()
+    .declare_subscriber("group1/*")
+    .querying()
+    .res()
+    .unwrap();
+while let Ok(change) = subscriber.recv() {
+    match change.kind {
+        SampleKind::Put => println!(
+            "Alive token ('{}')", change.key_expr.as_str()),
+        SampleKind::Delete => println!(
+            "Dropped token ('{}')", change.key_expr.as_str()),
+    }
+}
 ```
 
 ## Client liveliness Subscribers loosing connectivity
 
 When a client Zenoh application that subscribed to liveliness changes looses connectivity with the system (looses connectivity with it's router and fails to reesatblish connectivity), as it loosed connectivity with all remote applications a user could expect to receive a `delete` for all existing liveliness tokens. But this implies keeping a state of all tokens in the client itself which is undesirable.
 
-So, in such situation, to indicate to the user that all tokens are *dropped*, the following `delete` is sent to matching subscribers:
-- key: `@/liveliness/**`
+So, in such situation, to indicate to the user that all tokens are *dropped*, the following `delete` is sent to matching liveliness subscribers:
+- key: `**`
 - kind: `Delete`
 - value: empty
 
