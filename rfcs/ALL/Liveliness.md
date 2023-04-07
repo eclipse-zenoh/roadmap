@@ -27,7 +27,7 @@ If one or multiple Zenoh applications declare multiple liveliness tokens on the 
 
 ## The Liveliness struct
 
-All liveliness related functions are gathered in a `Liveliness` struct that can be accessed through a `liveliness`funtion on the Zenoh `Session.
+All liveliness related functions are gathered in a `Liveliness` struct that can be accessed through a `liveliness` funtion on the Zenoh `Session`.
 
 **Example:**
 ```rust
