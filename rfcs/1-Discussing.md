@@ -7,3 +7,4 @@ These RFCs are currently under discussion:
 - [Non Blocking Fault Tolerant Reliability](./ALL/Non%20Blocking%20Fault%20Tolerant%20Reliability.md)
 - [Query Payload](./ALL/Query%20Payload.md)
 - [Connectivity Status and Events](./ALL/Connectivity%20Status%20and%20Events.md)
+- [Matching Status](./ALL/Matching%20Status%20.md)
