@@ -7,7 +7,7 @@
 
 It is sometimes useful to know if there exist Subscribers matching a given key expression or not. For example it avoids computing data before publishing it when this computation is costly.
 
-[Liveliness](Liveliness) is a way to achieve this. But it's more costly than strictly necessary and implies tokens declarations on the subscriber side.
+[Liveliness](Liveliness.md) is a way to achieve this. But it's more costly than strictly necessary and implies tokens declarations on the subscriber side.
 
 One of the roles of a Zenoh Publisher is to perform writer side filtering. To perform such writer side filtering the Zenoh local infrastructure (library) has to know if there exist matching Subscribers or not. So it would make sense to give user access to this information from a Publisher.
 
