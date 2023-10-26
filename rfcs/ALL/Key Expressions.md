@@ -118,7 +118,7 @@ To ensure the very useful *unicity* property, key expressions have a canon form.
 * Any `$*` chunk is replaced by a `*` chunk.
 * `**/*` is replaced by `*/**`.
 
-Non canon forms are forbidden on a Zenoh network, and the expected behaviour if one makes it onto the network is for the next router to drop the message associated with it.
+Non canon forms are forbidden on a Zenoh network, and the expected behaviour if one makes it onto the network is for the next router to drop the message associated with it, and forcibly close the connection with the sender.
 
 Zenoh's APIs are designed so that the Key Expressions your provide are validated, returning errors if they were not valid. To ensure your KE string is only validated once, construct a `KeyExpr` from it, and use that `KeyExpr` whenever possible. If you're certain that your string is a valid KE, you may use unsafe constructors to bypass these checks.
 
