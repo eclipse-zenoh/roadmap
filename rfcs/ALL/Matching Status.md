@@ -18,22 +18,10 @@ The `MatchingStatus` struct represents the matching status of a `Publisher` at a
 It provides a single function that returns `true` if there exist Subscribers matching the Publisher’s key expression and `false` otherwise.
 
 ```rust
-pub fn is_matching(&self) -> bool
+pub fn matching_subscribers(&self) -> bool
 ```
 
-Note 1: Using an opaque struct with a function rather than a `bool` allows potential backward compatible evolutions in the future.
-
-Note 2: If we already want to prepare for the eventual situation in which Zenoh couldn't know if there exist matching Subscribers or not, we could rename the function:
-
-```rust
-pub fn maybe_matching(&self) -> bool
-```
-
-Or provide both: 
-```rust
-pub fn is_matching(&self) -> ZResult<bool>
-pub fn maybe_matching(&self) -> bool
-```
+Note: Using an opaque struct with a function rather than a `bool` allows potential backward compatible evolutions in the future.
 
 ## Accessing the MatchingStatus
 
@@ -48,7 +36,7 @@ use zenoh::prelude::r#async::*;
 
 let session = zenoh::open(config::peer()).res().await.unwrap().into_arc();
 let publisher = session.declare_publisher("key/expression").res().await.unwrap();
-let is_matching: bool = publisher.matching_status().res().await.unwrap().is_matching();
+let matching_subscribers: bool = publisher.matching_status().res().await.unwrap().matching_subscribers();
 ```
 
 ## Listening to MatchingStatus changes
@@ -68,33 +56,10 @@ let session = zenoh::open(config::peer()).res().await.unwrap();
 let publisher = session.declare_publisher("key/expression").res().await.unwrap();
 let matching_listener = publisher.matching_listener().res().await.unwrap();
 while let Ok(matching_status) = matching_listener.recv_async().await {
-    if matching_status.is_matching() {
+    if matching_status.matching_subscribers() {
         println!("Publisher has matching subscribers.");
     } else {
         println!("Publisher has NO MORE matching subscribers.");
     }
-}
-```
-
-## Alternatives
-
-Some proposed this alternative naming:
-```rust
-impl Publisher {
-    pub fn matching_subscribers(&self) -> impl Resolve<ZResult<MatchingSubscribers>>
-    pub fn matching_subscribers_listener(&self) -> impl  Resolve<ZResult<MatchingSubscribersListener>>
-}
-```
-
-```rust
-impl MatchingSubscribers {
-    pub fn exist(&self) -> bool
-}
-```
-or:
-```rust
-impl MatchingSubscribers{
-    pub fn exist(&self) -> ZResult<bool>
-    pub fn may_exist(&self) -> bool
 }
 ```
