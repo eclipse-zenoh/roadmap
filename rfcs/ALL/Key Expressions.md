@@ -98,6 +98,17 @@ Historical users who were accustomed to `*` being able to do exactly that may be
 * Is disjoint with:
 	* `a/uncool/b`
 
+## Namespaces (behavioural breaking change in Zenoh 0.11.0)
+From 0.11.0 on, Key Expressions will include a namespace. The goal of namespaces is to allow some key spaces to be "hermetically sealed" from each other.
+
+A KE's namespace is defined by its first chunk:
+- If the first chunk starts with `@`, then the KE lives in the namespace of that first chunk: it cannot intersect with any KE that doesn't begin with that same first chunk.
+- Otherwise, the KE lives in the default namespace. This namespace is not really different from other namespaces, as its members can also only intersect with other members of the default namespace.
+
+Notably, it is impossible to intersect a namespace chunk with anything other than itself, including wildcards and DSLs: neither `@v1/factories` nor `@v2/factories` will be intersected by `*/factories` or `**` (since these two belong to the default namespace), but they will intersect `@v1/*` and `@v2/*` respectively. We say that these KEs respectively belong to the `@v1` and `@v2` namespaces.
+
+While this is technically a breaking change to the KE's behaviour and semantics, we don't believe that any current Zenoh user will be impacted.
+
 ### Future plans
 The Zenoh team plans to introduce more complex DSLs in the future. However, these plans are too blury yet to be made public, and are subject to maintaining the current properties of key expressions.
 
@@ -108,6 +119,8 @@ KEs containing DSLs WILL put more strain on your Zenoh infrastructure than KEs t
 ## Adminspace
 
 As a convention, Zenoh team uses key expressions starting with `@` chunk to transmit control data in Zenoh.
+
+Note that from 0.11.0 onward, the adminspace will become its own namespace.
 
 ## Canon forms
 Wilds and DSLs by themselves introduce the possibility of multiple strings defining the same sets.
