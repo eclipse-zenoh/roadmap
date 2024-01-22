@@ -98,21 +98,28 @@ Historical users who were accustomed to `*` being able to do exactly that may be
 * Is disjoint with:
 	* `a/uncool/b`
 
-## Namespaces (behavioural breaking change in Zenoh 0.11.0)
-From 0.11.0 on, Key Expressions will include a namespace. The goal of namespaces is to allow some key spaces to be "hermetically sealed" from each other.
+## Verbatim chunks (behavioural breaking change in Zenoh 0.11.0)
+From 0.11.0 on, Key Expressions will include a verbatim chunk. The goal of these chunks is to allow some key spaces to be "hermetically sealed" from each other.
 
-A KE's namespace is defined by its first chunk:
-- If the first chunk starts with `@`, then the KE lives in the namespace of that first chunk: it cannot intersect with any KE that doesn't begin with that same first chunk.
-- Otherwise, the KE lives in the default namespace. This namespace is not really different from other namespaces, as its members can also only intersect with other members of the default namespace.
+Any chunk that starts with `@` is treated as a verbatim chunk, and can only be matched by an identical chunk.
 
-Notably, it is impossible to intersect a namespace chunk with anything other than itself, including wildcards and DSLs: neither `@v1/factories` nor `@v2/factories` will be intersected by `*/factories` or `**` (since these two belong to the default namespace), but they will intersect `@v1/*` and `@v2/*` respectively. We say that these KEs respectively belong to the `@v1` and `@v2` namespaces.
+For example, none of the followign KEs intersect: `my-api/@v1/**`, `my-api/@v2/**`, `my-api/*/**`, `my-api/@$*/**`, `my-api/**`.
 
 While this is technically a breaking change to the KE's behaviour and semantics, we don't believe that any current Zenoh user will be impacted.
 
-### Future plans
+### Namespaces
+The Zenoh team plans to introduce namespace features. These will be based on the convention that if a KE starts with a verbatim chunk `@x`, then its namespace is `@x`. If it doesn't start with such a chunk, it is considered to belong to the default namespace.
+
+Note that the default namespace and the `@` namespace (used by the Zenoh team for the adminspace) are distinct namespaces.
+
+### Separating KE sections
+One other use of verbatim chunks in KEs is to delimit variable-length sections of a KE. For example, if your were to use the `src/${src_path:**}/dst/${dst_path:**}` [format](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Formatters.md), how `src/./dst/dst/.` should be interpreted would be ambiguous. By using `src/${src_path:**}/@/dst/${dst_path:**}`, or even `src/dst/${src_path:**}/@/${dst_path:**}`, this ambiguity would disappear, since the `@` chunk cannot be matched by `**`.
+
+
+## Future plans
 The Zenoh team plans to introduce more complex DSLs in the future. However, these plans are too blury yet to be made public, and are subject to maintaining the current properties of key expressions.
 
-### Note
+## Note on DSLs
 
 KEs containing DSLs WILL put more strain on your Zenoh infrastructure than KEs that don't, so we advise designing your key space such that they don't become necessary. For example, avoid `factory-12/room-10/robot-9`, favoring `factory/12/room/10/robot/9`, as `factory/12/room/10/robot/*` will put less strain on your infrastructure than `factory-12/room-10/robot-$*`.
 
