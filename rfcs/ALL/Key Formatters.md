@@ -7,3 +7,5 @@ Intended properties are as such:
 * Provide a convenient way for users to extract the sections of KEs that they may have subscribed to wildly for use as parameters.
 
 Debates on form, inner workings, and degree of functionality are still ongoing.
+
+Currently, formatters exist in the form of a KE generation facility in the [Rust API](https://docs.rs/zenoh/0.10.1-rc/zenoh/key_expr/format/struct.KeFormat.html).
