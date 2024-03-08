@@ -1,11 +1,11 @@
-# ACL Allow/Deny Rule Priority
+# Allow/Deny Rule Priority in ACL
 
-If the ACL is enabled, we have two fields that will set the rules to be checked for authorization:
+If the ACL is enabled in the config, we have two fields that will set the rules to be checked for authorization:
 
-1. default_permission: Allow/Deny 
-2. rules: [ vector of rules ] here explicit Allow and Deny permissions are granted for access to key-expressions
+1. *default_permission*: Allow/Deny 
+2. *rules*: [ vector of rules ] here explicit Allow and Deny permissions are granted for access to key-expressions
 
-For each subject+action in the rules vector, we construct both an *Allow* and *Deny* KeTree (key-expression trie). On receiving an authorization request, the key-expression in it will be matched against the KeTrees to confirm authorization. The priority of rules is as follows: 
+For each subject+action combination (example: `localhost0`+`test/demo/a`) in the rules vector, we construct both an *Allow* and *Deny* KeTree (key-expression trie). The *Allow* KeTree contains all the key-expressions on which the subject is allowed to do that action. On receiving an authorization request, the key-expression in the request will be matched against the KeTrees to confirm authorization. The priority of rules is as follows: 
 
 explicit *Deny* rule > explicit *Allow* rule > *default_permission* rule
 
