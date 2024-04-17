@@ -32,16 +32,16 @@ Starting from 0.11.0 release, zenoh provides the option of controlling access ba
 
 The configuration has 3 fields:
 
-1. *enabled*: true/false
-2. *default_permission*: allow/deny 
-3. *rules*: [ vector of rules ] This is where explicit Allow and Deny permissions are granted for access to key-expressions
+1. **enabled**: true/false
+2. **default_permission**: allow/deny 
+3. **rules**: [ vector of rules ] This is where explicit Allow and Deny permissions are granted for access to key-expressions
 
-The *enabled* field decides if the ACL is enabled or not. If it is set to false, no filtering of messages happens. 
-The *default_permission* field provides the implicit permission for the filtering. If set to allow, it will allow all messages to pass through unless explicitly denied in the *rules* field. If set to deny, it blocks all messages and only allows those that are allowed by explicit rules provided in the *rules* field. These implicit rule has less priority than explicit rules provided in the *rules* section.
+The **enabled** field decides if the ACL is enabled or not. If it is set to false, no filtering of messages happens. 
+The **default_permission** field provides the implicit permission for the filtering. If set to `allow`, it will allow all messages to pass through unless explicitly denied in the **rules** field. If set to `deny`, it blocks all messages and only allows those that are allowed by explicit rules provided in the **rules** field. These implicit rule has less priority than explicit rules provided in the **rules** section.
 
-The *rules* section itself has 5 inner fields: *actions*, *flows*, *permission*, *key_exprs*, *interfaces*
+The **rules** section itself has 5 inner fields: **actions**, **flows**, **permission**, **key_exprs**, **interfaces**
 
-actions: supports four values (currently), put, get, declare_subscriber, declare_queryable
+actions: provides options of four values (currently), put, get, declare_subscriber, declare_queryable. Each value is 
 flows: supports two values, egress and ingress
 permission: supports allow and deny
 interfaces: supports all possible value for network interfaces, eg: lo, lo0 etc
@@ -55,9 +55,9 @@ explicit *Deny* rule > explicit *Allow* rule > *default_permission* rule
 
 1. Explicit *Deny* rules are given topmost priority. This means that if the key-expression in the  authorization request matches against anything in the *Deny* KeTree, it will be denied. 
 2. Explicit *Allow* permissions come next, i.e., if request matches anything in the *Allow* tree then it will be allowed (unless denied in the previous step).
-3. The *default_permission* value has least priority. It is applied only if there are no matches in the previous two steps.
+3. The **default_permission** value has least priority. It is applied only if there are no matches in the previous two steps.
     
-    Note: if *default_permission* is set to *Allow*, then there is no need for checking against explicit *Allow* rules.
+    Note: if **default_permission** is set to *Allow*, then there is no need for checking against explicit *Allow* rules.
     
 
 The decision logic looks as follows:
