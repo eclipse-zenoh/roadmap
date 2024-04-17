@@ -1,6 +1,9 @@
-# Allow/Deny Rule Priority in ACL
+# ACL rules
 
-ACL configuration looks like this:
+Starting from 0.11.0 release, zenoh provides the option of controlling access based on network interface. This is done using a 
+
+ The typical ACL configuration in the config.json5 file looks like this:
+
 ```json5
  acl: {
   ///[true/false] acl will be activated only if this is set to true
@@ -12,7 +15,7 @@ ACL configuration looks like this:
   [
     {
       "actions": [
-        "put"
+        "put","get","declare_subscriber","declare_queryable"
       ],
       "flows":["egress","ingress"],
       "permission": "allow",
@@ -24,17 +27,17 @@ ACL configuration looks like this:
       ]
     },
  ]
-},
+}
 ```
 
 The configuration has 3 fields:
 
-1. enabled: true/false
+1. *enabled*: true/false
 2. *default_permission*: allow/deny 
-3. *rules*: [ vector of rules ] here explicit Allow and Deny permissions are granted for access to key-expressions
+3. *rules*: [ vector of rules ] This is where explicit Allow and Deny permissions are granted for access to key-expressions
 
-The first field decides if the ACL is enabled or not.
-The *default_permission* field provides the implicit permission for the filtering. If set to allow, it will allow all messages to pass through unless explicitly denied in the *rules* field. If set to deny, it blocks all messages and only allows those that are allowed by explicit rules in the *rules* field.
+The *enabled* field decides if the ACL is enabled or not. If it is set to false, no filtering of messages happens. 
+The *default_permission* field provides the implicit permission for the filtering. If set to allow, it will allow all messages to pass through unless explicitly denied in the *rules* field. If set to deny, it blocks all messages and only allows those that are allowed by explicit rules provided in the *rules* field. These implicit rule has less priority than explicit rules provided in the *rules* section.
 
 The *rules* section itself has 5 inner fields: *actions*, *flows*, *permission*, *key_exprs*, *interfaces*
 
