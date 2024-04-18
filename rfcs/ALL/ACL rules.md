@@ -88,9 +88,9 @@ fn is_allowed(key_expr) -> decision {
 
 An important thing to note here is how our key-expression matching works since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *equal to* or *subset of* the key-expressions in the KeTree. A partial match or being a super-set will not result in a match.
 
-The following table demonstrates how the matching will work on a key-expression in request and in the ruleset:
+The following table demonstrates how the matching will work on a key-expression in request and in the rules set:
 
-| ke in request | ke in ruleset | match |
+| ke in request | ke in rules set | match |
 |---------------|---------------|-------|
 | t/d/a         | t/d/a         | yes   |
 | t/d/a         | t/d/*         | yes   |
@@ -100,12 +100,12 @@ The following table demonstrates how the matching will work on a key-expression 
 | t/d/*         | t/*/a         | no    |
 | t/**          | t/d/a         | no    |
 
-If the match happens then the result will be as set in the explicit rules. If not, then the default permission will take over. For example, if the default permission is `allow` and the key-expressions in the *explicit deny* rules are any of the key-expressions like `test/demo/a` , `test/demo/*` or `test/demo/**` then a request on `test/demo/a` will match with the *explicit deny* KeTree and will be denied. However, given the same ruleset, a request on `test/**` will not match (since it is a superset) and therefore the request will be allowed to go through. Therefore, extra care needs to be taken while devising the rules, and especially so when using wildcards.
+If the match happens then the result will be as set in the explicit rules. If not, then the default permission will take over. For example, if the default permission is `allow` and the key-expressions in the *explicit deny* rules are any of the key-expressions like `test/demo/a` , `test/demo/*` or `test/demo/**` then a request on `test/demo/a` will match with the *explicit deny* KeTree and will be denied. However, given the same rules set, a request on `test/**` will not match (since it is a superset) and therefore the request will be allowed to go through. Therefore, extra care needs to be taken while devising the rules, and especially so when using wildcards.
 
 
 ## Performance
 
 Given, zenoh's priority is performance, a lot of care was taken while adding access control features to the codebase, to keep the performance as high as possible. However, as with any other piece of software, security comes with a price in terms of performance. However, having done multiple tests on performance, we can share some tips to improve performance:
-1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards (eg: `test/demo/*` or`test/**`). Therefore, avoid using wild-cards as much as possiblein your ruleset.
+1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards (eg: `test/demo/*` or`test/**`). Therefore, avoid using wild-cards as much as possiblein your rules set.
 2. Using both flows in the rules set can results in checking of the messages twice. If possible, use only a single flow in your rules.
 3. Tip 2 can be applied to all the other fields as well, though the performance improvement will not be as drastic. You should keep the rules set as specific as possible. If you don't need to use certain actions or flows, you can skip them in the rule set. For example, if your scenario uses only publishers and subscribers, maybe you don't have to set rules for `get` and `declare_queryable` in your acl.
