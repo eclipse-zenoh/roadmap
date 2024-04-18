@@ -2,7 +2,9 @@
 
 Starting from 0.11.0 release, zenoh provides the option of controlling access to key-expressions (eg: `test/demo` ) based on network interface (eg: `lo`). The access control is managed by filtering messages (denoted as **actions** in the acl config): `put`, `get`, `declare_subscriber`, `declare_queryable`. This filteration can be applied on both sides of the interceptor: the incoming messages (`ingress`) and outgoing messages (`egress`).
 
- The typical ACL configuration in the config.json5 file looks like this:
+## Access Control Config
+
+The typical ACL configuration in the config.json5 file looks something like this:
 
 ```json5
  acl: {
@@ -30,7 +32,6 @@ Starting from 0.11.0 release, zenoh provides the option of controlling access to
 }
 ```
 
-
 The configuration has 3 fields:
 
 1. **enabled**: true/false
@@ -49,7 +50,10 @@ The **rules** section itself has 5 inner fields: **actions**, **flows**, **permi
 **key_exprs**: supports values of any key type or key-expression (set of keys) type, eg: `temp/room_1`, `temp/**` etc
 
 
-For each combination of **interface** + **flow** + **action**  (example:`l0`+`egress`+`put`) in the rules vector, we construct *allow* and *deny* KeTrees (key-expression tries). The *allow* KeTree is built using all the key-expressions provided in the config on which that **interface** is allowed to do that **action** on a particular **flow**. On receiving an authorization request, the key-expression in the request is matched against the appropriate KeTrees to confirm authorization. The priority of rules is as follows: 
+For each combination of **interface** + **flow** + **action**  (example:`l0`+`egress`+`put`) in the rules vector, we construct *allow* and *deny* KeTrees (key-expression tries). The *allow* KeTree is built using all the key-expressions provided in the config on which that **interface** is allowed to do that **action** on a particular **flow**. On receiving an authorization request, the key-expression in the request is matched against the appropriate KeTrees to confirm authorization.
+
+## Priority 
+For each message, the access control checks are made in the following order of priority:
 
 *explicit deny* rule > *explicit allow* rule > *default_permission* rule
 
@@ -57,20 +61,20 @@ For each combination of **interface** + **flow** + **action**  (example:`l0`+`eg
 2. *Explicit allow* permissions come next, i.e., if request matches anything in the *allow* tree then it will be allowed.
 3. The **default_permission** value has least priority. It is applied only if there are no matches in the previous two steps.
     
-    Note: if **default_permission** is set to `allow`, then there is no need for checking against *explicit allow* rules.
+    Note: if **default_permission** is set to `allow`, then there is no need for setting *explicit allow* rules, since they will be discarded anyways.
     
 
 The decision logic is as follows:
 
 ```rust
 fn is_allowed(key_expr) -> decision {
-   if default_permission == DENY {
+   if default_permission == deny {
       if !deny_ketree.match(key_expr) && allow_ketree.match(key_expr) {
             return true;
       } else {
           return false;
       }
-   } else { //default_permission = ALLOW
+   } else { //default_permission = allow
       if deny_ketree.match(key_expr) {
          return false;
       } 
@@ -80,15 +84,21 @@ fn is_allowed(key_expr) -> decision {
 }
 ```
 
-An important thing to note here is how our key-expression matching works since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive if it is *equal to*, *subset of* or *superset of* anything in the KeTree. For example: key-expression `test/demo/a` will match if the KeTree contains any of these values: `test/demo/a` , `test/demo/**` , `test/demo/a/b`. Since *explicit deny* is always given preference over *explicit allow*, this means that if the incoming request on `test/demo/a` is denied if any of `test/demo/a`, `test/demo/**` or `test/demo/a/b` are present in the *deny* set of rules specified in the ACL.
+## Key-Expression Matching
 
-The following table gives a better idea of of how the filtering will work on a key-expression (in Request column) and in the ruleset, you have explictly denied that action on another key-epression in the rules in the acl config:
+An important thing to note here is how our key-expression matching works since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *equal to* or *subset of* the key-expressions in the KeTree. A partial match or being a super-set will not result in a match.
 
+The following table demonstrates how the matching will work on a key-expression in request and in the ruleset:
 
-|   Request    | In Deny Ruleset |  Result   |
-|--------------|-----------------|-----------|
-| test/demo/a  |  test/demo/**   | denied    |
-| test/demo/** |  test/demo/a    | denied    |
-| test/demo/a  |  test/demo/a/b  | denied    |
-| test/demo/a/b|  test/demo/a    | denied    |
-| test/demo/a  |  test/demo/**   | denied    |
+| ke in request | ke in ruleset | match |
+|---------------|---------------|-------|
+| t/d/a         | t/d/a         | yes   |
+| t/d/a         | t/d/*         | yes   |
+| t/*/*         | t/**          | yes   |
+| t/d/a         | **            | yes   |
+| t/d/a         | t/*/a         | yes   |
+| t/d/*         | t/*/a         | no    |
+| t/**          | t/d/a         | no    |
+
+If the match happens then the result will be as set in the explicit rules. If not, then the default permission will take over. For example, if the default permission is `allow` and the key-expressions in the *explicit deny* rules are any of the key-expressions like `test/demo/a` , `test/demo/*` or `test/demo/**` then a request on `test/demo/a` will match with the *explicit deny* KeTree and will be denied. However, given the same ruleset, a request on `test/**` will not match (since it is a superset) and therefore the request will be allowed to go through. Therefore, extra care needs to be taken while devising the rules, and especially so when using wildcards.
+
