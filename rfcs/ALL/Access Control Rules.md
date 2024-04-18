@@ -1,4 +1,4 @@
-# ACL rules
+# Access Control Rules 
 
 Starting from 0.11.0 release, zenoh provides the option of controlling access to key-expressions (eg: `test/demo` ) based on network interface (eg: `lo`). The access control is managed by filtering messages (denoted as **actions** in the acl config): `put`, `get`, `declare_subscriber`, `declare_queryable`. This filteration can be applied on both sides of the interceptor: the incoming messages (`ingress`) and outgoing messages (`egress`).
 
