@@ -105,8 +105,8 @@ If the match happens then the result will be as set in the explicit rules. If no
 
 ## Performance: 
 
-While a lot of care was taken into account while 
-
-
-Tips for performance: Performance: There will due to how ke-tree search is designed, absolute keys will always be faster than key-expressions. So if users wants a high-performance, they should keep wild charaacter entries to a minimum.
+Given, zenoh's priority is performance, a lot of care was taken while adding access control features to the codebase, to keep the performance as high as possible. However, as with any other piece of software, security comes with a price in terms of performance. However, having done multiple tests on performance, we can share some tips to improve performance:
+1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards (eg: `test/demo/*` or`test/**`). Therefore, avoid using wild-cards as much as possiblein your ruleset.
+2. Using both flows in the rules set can results in checking of the messages twice. If possible, use only a single flow in your rules.
+3. Tip 2 can be applied to all the other fields as well, though the performance improvement will not be as drastic. You should keep the rules set as specific as possible. If you don't need to use certain actions or flows, you can skip them in the rule set. For example, if your scenario uses only publishers and subscribers, maybe you don't have to set rules for `get` and `declare_queryable` in your acl.
 
