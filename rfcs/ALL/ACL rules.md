@@ -43,11 +43,11 @@ The **default_permission** field provides the implicit permission for the filter
 
 The **rules** section itself has 5 inner fields: **actions**, **flows**, **permission**, **key_exprs**, **interfaces**
 
-**actions**: supports four types of messsges - `put`, `get`, `declare_subscriber`, `declare_queryable`
-**flows**: supports two values - `egress` and `ingress`
-**permission**: supports `allow` and `deny`
-**interfaces**: supports all possible value for network interfaces, eg: `lo`, `lo0` etc
-**key_exprs**: supports values of any key type or key-expression (set of keys) type, eg: `temp/room_1`, `temp/**` etc
+* **actions**: supports four types of messsges - `put`, `get`, `declare_subscriber`, `declare_queryable`
+* **flows**: supports two values - `egress` and `ingress`
+* **permission**: supports - `allow` and `deny`
+* **key_exprs**: supports values of any key type or key-expression (set of keys) type, eg: `temp/room_1`, `temp/**` etc
+* **interfaces**: supports all possible value for network interfaces, eg: `lo`, `lo0` etc
 
 
 For each combination of **interface** + **flow** + **action**  (example:`l0`+`egress`+`put`) in the rules vector, we construct *allow* and *deny* KeTrees (key-expression tries). The *allow* KeTree is built using all the key-expressions provided in the config on which that **interface** is allowed to do that **action** on a particular **flow**. On receiving an authorization request, the key-expression in the request is matched against the appropriate KeTrees to confirm authorization.
@@ -103,10 +103,9 @@ The following table demonstrates how the matching will work on a key-expression 
 If the match happens then the result will be as set in the explicit rules. If not, then the default permission will take over. For example, if the default permission is `allow` and the key-expressions in the *explicit deny* rules are any of the key-expressions like `test/demo/a` , `test/demo/*` or `test/demo/**` then a request on `test/demo/a` will match with the *explicit deny* KeTree and will be denied. However, given the same ruleset, a request on `test/**` will not match (since it is a superset) and therefore the request will be allowed to go through. Therefore, extra care needs to be taken while devising the rules, and especially so when using wildcards.
 
 
-## Performance: 
+## Performance
 
 Given, zenoh's priority is performance, a lot of care was taken while adding access control features to the codebase, to keep the performance as high as possible. However, as with any other piece of software, security comes with a price in terms of performance. However, having done multiple tests on performance, we can share some tips to improve performance:
 1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards (eg: `test/demo/*` or`test/**`). Therefore, avoid using wild-cards as much as possiblein your ruleset.
 2. Using both flows in the rules set can results in checking of the messages twice. If possible, use only a single flow in your rules.
 3. Tip 2 can be applied to all the other fields as well, though the performance improvement will not be as drastic. You should keep the rules set as specific as possible. If you don't need to use certain actions or flows, you can skip them in the rule set. For example, if your scenario uses only publishers and subscribers, maybe you don't have to set rules for `get` and `declare_queryable` in your acl.
-
