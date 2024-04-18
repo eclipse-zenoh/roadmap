@@ -36,7 +36,7 @@ The configuration has 3 fields:
 
 1. **enabled**: true/false
 2. **default_permission**: allow/deny 
-3. **rules**: [ vector of rules ] This is where explicit Allow and Deny permissions are granted for access to key-expressions
+3. **rules**: This is the rules set where explicit allow and deny permissions are specified
 
 The **enabled** field decides if the ACL is enabled or not. If it is set to `false`, no filtering of messages takes place and everything following that in the config is ignored.
 The **default_permission** field provides the implicit permission for the filtering, i.e., this rule applies if no other matching rule is found for an **action**. If set to `allow`, it will allow all messages to pass through unless explicitly denied in the **rules** field. If set to `deny`, it blocks all messages and only allows those that are allowed by explicit rules provided in the **rules** field. The **default_permission** always has lower priority than explicit rules provided in the **rules** section.
