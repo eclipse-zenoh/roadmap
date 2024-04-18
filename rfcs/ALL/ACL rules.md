@@ -94,11 +94,19 @@ The following table demonstrates how the matching will work on a key-expression 
 |---------------|---------------|-------|
 | t/d/a         | t/d/a         | yes   |
 | t/d/a         | t/d/*         | yes   |
-| t/*/*         | t/**          | yes   |
+| t/\*/\*         | t/**          | yes   |
 | t/d/a         | **            | yes   |
 | t/d/a         | t/*/a         | yes   |
 | t/d/*         | t/*/a         | no    |
 | t/**          | t/d/a         | no    |
 
 If the match happens then the result will be as set in the explicit rules. If not, then the default permission will take over. For example, if the default permission is `allow` and the key-expressions in the *explicit deny* rules are any of the key-expressions like `test/demo/a` , `test/demo/*` or `test/demo/**` then a request on `test/demo/a` will match with the *explicit deny* KeTree and will be denied. However, given the same ruleset, a request on `test/**` will not match (since it is a superset) and therefore the request will be allowed to go through. Therefore, extra care needs to be taken while devising the rules, and especially so when using wildcards.
+
+
+## Performance: 
+
+While a lot of care was taken into account while 
+
+
+Tips for performance: Performance: There will due to how ke-tree search is designed, absolute keys will always be faster than key-expressions. So if users wants a high-performance, they should keep wild charaacter entries to a minimum.
 
