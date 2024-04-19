@@ -86,7 +86,7 @@ fn is_allowed(key_expr) -> decision {
 
 ## Key-Expression Matching
 
-An important thing to note here is how our key-expression matching works since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *equal to* or *subset of* the key-expressions in the KeTree. A partial match or being a super-set will not result in a match.
+An important thing to note here is how our key-expression matching works since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *included in* (*equal to* or *subset of*) the key-expressions specified in the KeTree. A partial match or being a superset will not result in a match.
 
 The following table demonstrates how the matching will work on a key-expression(KE) in request and in the rules set:
 
