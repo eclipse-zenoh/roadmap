@@ -90,7 +90,7 @@ An important thing to note here is how our key-expression matching works since i
 
 The following table demonstrates how the matching will work on a key-expression(KE) in request and in the rules set:
 
-| KE in request | KE in rules set | match |
+| KE in request | KE in rules set | Match |
 |---------------|---------------|-------|
 | test/demo/a         | test/demo/a         | yes   |
 | test/demo/a         | test/demo/*         | yes   |
@@ -102,7 +102,7 @@ The following table demonstrates how the matching will work on a key-expression(
 
 The same behaviour extends for our DSL support as well:
 
-| KE in request | KE in rules set | match |
+| KE in request | KE in rules set | Match |
 |---------------|---------------|-------|
 | test/demo/a         | test/d$*/a         | yes   |
 | test/demo/a         | t$*/**            | yes   |
@@ -112,7 +112,7 @@ The same behaviour extends for our DSL support as well:
 
 For verbatims, the subpart of the key-expression starting with `@` has to be *exactly* the same in the rules set for a match. The other parts of the key-expression follow matching rules as before.
 
-| KE in request | KE in rules set | match |
+| KE in request | KE in rules set | Match |
 |---------------|---------------|-------|
 | test/@demo/a         | test/demo/a         | no   |
 | test/demo/a         | test/@demo/a         | no   |
@@ -129,6 +129,6 @@ If the match happens then the result will be as set in the explicit rules. If no
 Given, zenoh's priority is performance, a lot of care was taken while adding access control features to the codebase, to keep the performance as high as possible. However, as with any other piece of software, security comes with a price in terms of performance. However, having done multiple tests, we can share some tips to improve performance:
 
 1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards and DSL (eg: `test/demo/*` or`test/d$*`). Therefore, don't use them in your rules set unless necessary. Verbatims are okay.
-2. The number of chunks in a key-expression also affects the performance. Keep the number of chunks as low as possible in the key expression.
+2. The number of chunks in a key-expression also affects the performance since it increases the depth of the KeTree to be searched. Keep the number of chunks as low as possible in the key expression.
 3. Using both flows in the rules set can results in checking of the messages twice. If possible, use only a single flow in your rules.
 4. Tip 2 can be applied to all the other fields as well, though the performance improvement will not be as drastic. You should keep the rules set as specific as possible. If you don't need to use certain actions or flows, you can skip them in the rule set. For example, if your scenario uses only publishers and subscribers, maybe you don't have to set rules for `get` and `declare_queryable` in your acl.
