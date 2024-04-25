@@ -77,8 +77,8 @@ fn is_allowed(key_expr) -> decision {
       if deny_ketree.match(key_expr) {
          return false;
       } 
-			// no need to check for allow_ketree here
-			return true; 
+      // no need to check for allow_ketree here
+      return true; 
    }
 }
 ```
