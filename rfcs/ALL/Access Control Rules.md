@@ -85,7 +85,7 @@ fn is_allowed(key_expr) -> decision {
 
 ## Key-Expression Matching
 
-All requets are macthed on keys and key expressions (for more information on key expressions, check out our [RFC](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Expressions.md)) . Therefore, it is important to understand how the key-expression matching works, since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *included in* (*equal to* or *subset of*) the key-expressions specified in the KeTree. A partial match or being a superset will not result in a match.
+All requets are macthed on keys and key expressions (for more information on key expressions, check out [Key_Expressions](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Expressions.md)) . Therefore, it is important to understand how the key-expression matching works, since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *included in* (*equal to* or *subset of*) the key-expressions specified in the KeTree. A partial match or being a superset will not result in a match.
 
 The following table demonstrates how the matching will work on a key-expression(KE) in request and in the list of rules:
 
@@ -106,19 +106,19 @@ The same behaviour extends for our DSL support as well:
 | test/demo/a         | test/d$*/a         | yes   | -  | 
 | test/demo/a         | t$*/**            | yes   | -  | 
 | test/d$*/a        | t$*/**            | yes   | -  |
-| test/demo/*         | test/d$*/a         | no    | partial match  |
+| test/demo/*         | test/d$*/a         | no    | partial overlap  |
 | test/d$*/a          | test/demo/a         | no    | superset  |
 
 For verbatims, the subpart of the key-expression starting with `@` has to be *exactly* the same in the list of rules for a match. The other parts of the key-expression follow matching rules as before.
 
-| KE in request | KE in list of rules | Match |
+| KE in request | KE in list of rules | Match |Reason|
 |---------------|---------------|-------|-----|
 | test/@demo/a         | test/demo/a         | no   | verbatim missing  | 
 | test/demo/a         | test/@demo/a         | no   | verbatim missing | 
 | test/@demo/a         | test/@demo/*         | yes   | -  | 
 | test/@demo/a         | **            | no   | verbatim missing  | 
 | test/@demo/a         | test/*/a         | no   | verbatim missing  | 
-| test/@demo/*         | */@demo/a         | no    | partial match  | 
+| test/@demo/*         | */@demo/a         | no    | partial overlap  | 
 
 If the match happens then the result will be as set in the explicit rules. If not, then the default permission will take over. For example, if the default permission is `allow` and the key-expressions in the *explicit deny* rules are any of the key-expressions like `test/demo/a` , `test/demo/*` or `test/demo/**` then a request on `test/demo/a` will match with the *explicit deny* KeTree and will be denied. However, given the same list of rules, a request on `test/**` will not match (since it is a superset) and therefore the request will be allowed to go through. Therefore, extra care needs to be taken while devising the rules, and especially so when using wildcards.
 
