@@ -125,7 +125,7 @@ If the match happens then the result will be as set in the explicit rules. If no
 
 ## Performance
 
-Given Zenoh's priority is performance, a lot of care was taken while adding access control features to the codebase, to keep the performance as high as possible. However, as with any other piece of software, security comes with a price in terms of performance. However, having done multiple tests, we can share some tips to improve performance:
+Given Zenoh's priority is performance, a lot of care was taken while adding access control features to the codebase, to keep the performance as high as possible. However, as with any other piece of software, security comes with a price in terms of performance. Having done multiple tests, we can share some tips to improve performance:
 
 1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards and DSL (eg: `test/demo/*` or`test/d$*`). Therefore, don't use them in your list of rules unless necessary. Verbatims are okay.
 2. The number of chunks in a key-expression also affects the performance since it increases the depth of the KeTree to be searched. So `test/demo/a` will be faster than `test/demo/a/b/c`. This loss of performance is not as drastic as that of using wildcards and DSL. However, still try to keep the number of chunks as low as possible in the key expression.
