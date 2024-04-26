@@ -129,5 +129,5 @@ Given Zenoh's priority is performance, a lot of care was taken while adding acce
 
 1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards and DSL (eg: `test/demo/*` or`test/d$*`). Therefore, don't use them in your list of rules unless necessary. Verbatims are okay.
 2. The number of chunks in a key-expression also affects the performance since it increases the depth of the KeTree to be searched. So `test/demo/a` will be faster than `test/demo/a/b/c`. This loss of performance is not as drastic as that of using wildcards and DSL. However, still try to keep the number of chunks as low as possible in the key expression.
-3. Using both flows in the list of rules can results in checking of the messages twice. If possible, use only a single flow in your rules.
+3. Using both flows in the list of rules can cause a double verification of messages. If possible, only use a single flow in your rules.
 4. Tip 3 can be applied to all the other fields as well, though the performance improvement will not be as drastic. You should keep the list of rules as specific as possible. If you don't need to use certain actions or flows, you can skip them in the list of rules. For example, if your scenario uses only publishers and subscribers, maybe you don't have to set rules for `get` and `declare_queryable` in your access control rules.
