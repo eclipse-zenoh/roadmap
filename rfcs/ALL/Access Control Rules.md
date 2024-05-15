@@ -42,7 +42,7 @@ The *default_permission* field provides the implicit permission for the filterin
 The *rules* section itself has sub-fields: *actions*, *flows*, *permission*, *key_exprs*, *interfaces*. The values provided in these fields set the explicit rules for the access control:
 
 * **actions**: supports four types of messsges - `put`, `get`, `declare_subscriber`, `declare_queryable`
-* **flows**: supports two values - `egress` and `ingress`
+* **flows**: supports two values - `egress` and `ingress`. If this field is not provided, the rule will apply to both flows.
 * **permission**: supports value `allow` or `deny`
 * **key_exprs**: supports values of any key type or key-expression (set of keys) type, eg: `temp/room_1`, `temp/**` etc. (see [Key_Expressions](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Expressions.md))
 * **interfaces**: supports all possible value for network interfaces, eg: `lo`, `lo0` etc. If this field is not provided, the rule will apply to all interfaces.
