@@ -22,7 +22,7 @@ The typical ACL configuration in the config.json5 file looks something like this
         "delete",
         "declare_subscriber",
       ],
-      "flows":["egress","ingress"],
+      "flows":["ingress", "egress"],
       "permission": "allow",
       "key_exprs": [
         "test/demo"
@@ -90,7 +90,7 @@ Note that a subject with no *interfaces*, *cert_common_names* and *usernames* is
 
 Finally, the *policies* section allows to associate (i.e apply) rules to subjects. It is a list of JSON objects containing each a *rules* and *subjects* list, which respectively contain identifiers of declared rules and declared subjects to be associated.
 
-For example, in our sample config, the *default_permission* is set to deny and then the `"allow pub/sub on test/demo"` rule is added to explicitly allow certain behavior.  Here, a node connecting via the `lo0` interface will be allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression for both incoming and outgoing messages. However, if there is a node trying to send another message type (eg: `query`), it will be denied. Additionally, nodes connected via any interface and authentified with one of the listed usernames in the `"usernames on any interface"` subject are also allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression. This provides a granular access control over permissions, ensuring that only authorized devices or networks can perform allowed behavior. 
+For example, in our sample config, the *default_permission* is set to deny and then the `"allow pub/sub on test/demo"` rule is added to explicitly allow certain behavior. Here, a node connecting via the `lo0` interface will be allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression for both incoming and outgoing messages. However, if there is a node trying to send another message type (eg: `query`), it will be denied. Additionally, nodes connected via any interface and authentified with one of the listed usernames in the `"usernames on any interface"` subject are also allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression. This provides a granular access control over permissions, ensuring that only authorized devices or networks can perform allowed behavior. 
 
 Internally, for each combination of *subject_combination* + *flow* + *message*  (example:`Interface("l0")`+`"egress"`+`"put"`) parsed from the config, we construct *allow* and *deny* KeTrees (key-expression tries). The *allow* KeTree is built using all the key-expressions provided in the config on which that *subject* is allowed to perform that *action* on a particular *flow*. On receiving an authorization request, the key-expression in the request is matched against the appropriate KeTrees to confirm authorization.
 
