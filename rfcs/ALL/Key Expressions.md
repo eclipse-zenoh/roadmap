@@ -2,7 +2,7 @@
 
 ## Preface
 
-Zenoh being a Named-Data oriented protocol, its address space is the space of names of given to data.
+Zenoh being a Named-Data oriented protocol, its address space is the space of names given to data.
 
 Specifically, addressable data in Zenoh is addressed via a *key*.
 
@@ -87,7 +87,7 @@ For now, only a single DSL is supported:
 
 Historical users who were accustomed to `*` being able to do exactly that may be surprised, so here's why `$*` was split from `*`'s new restricted role:
 * A `*a` chunk used to be *much* slower than `*/a`. By forcing users to write the less appealing `$*a` instead, we hope to discourage them from using these sub-chunk wilds; and to encourage them to build better key spaces instead.
-* Just supporting `$*` as part of `*`'s old behaviour made `*` less performant overall, even when used alone in a chunk. By inconviencing non-compliant users, we offer performance benefits to the compliant ones.
+* Just supporting `$*` as part of `*`'s old behaviour made `*` less performant overall, even when used alone in a chunk. By inconveniencing non-compliant users, we offer performance benefits to the compliant ones.
 
 `a/c$*/b`...
 * Includes:
@@ -103,7 +103,7 @@ From 0.11.0 on, Key Expressions will include a verbatim chunk. The goal of these
 
 Any chunk that starts with `@` is treated as a verbatim chunk, and can only be matched by an identical chunk.
 
-For example, none of the followign KEs intersect: `my-api/@v1/**`, `my-api/@v2/**`, `my-api/*/**`, `my-api/@$*/**`, `my-api/**`.
+For example, none of the following KEs intersect: `my-api/@v1/**`, `my-api/@v2/**`, `my-api/*/**`, `my-api/@$*/**`, `my-api/**`.
 
 While this is technically a breaking change to the KE's behaviour and semantics, we don't believe that any current Zenoh user will be impacted.
 
@@ -113,11 +113,11 @@ The Zenoh team plans to introduce namespace features. These will be based on the
 Note that the default namespace and the `@` namespace (used by the Zenoh team for the adminspace) are distinct namespaces.
 
 ### Separating KE sections
-One other use of verbatim chunks in KEs is to delimit variable-length sections of a KE. For example, if your were to use the `src/${src_path:**}/dst/${dst_path:**}` [format](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Formatters.md), how `src/./dst/dst/.` should be interpreted would be ambiguous. By using `src/${src_path:**}/@/dst/${dst_path:**}`, or even `src/dst/${src_path:**}/@/${dst_path:**}`, this ambiguity would disappear, since the `@` chunk cannot be matched by `**`.
+One other use of verbatim chunks in KEs is to delimit variable-length sections of a KE. For example, if you were to use the `src/${src_path:**}/dst/${dst_path:**}` [format](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Formatters.md), how `src/./dst/dst/.` should be interpreted would be ambiguous. By using `src/${src_path:**}/@/dst/${dst_path:**}`, or even `src/dst/${src_path:**}/@/${dst_path:**}`, this ambiguity would disappear, since the `@` chunk cannot be matched by `**`.
 
 
 ## Future plans
-The Zenoh team plans to introduce more complex DSLs in the future. However, these plans are too blury yet to be made public, and are subject to maintaining the current properties of key expressions.
+The Zenoh team plans to introduce more complex DSLs in the future. However, these plans are too blurry yet to be made public, and are subject to maintaining the current properties of key expressions.
 
 ## Note on DSLs
 
@@ -144,5 +144,5 @@ Zenoh's APIs are designed so that the Key Expressions your provide are validated
 
 
 ## Culture induced performance bias
-The Zenoh team working mainly in English and coming from cultures that mostly use left-to-right writing systems, Zenoh's internals are typically developped under the assumption that higher variance parts of the key-space will be the part at higher pointer values within the string.
+The Zenoh team working mainly in English and coming from cultures that mostly use left-to-right writing systems, Zenoh's internals are typically developed under the assumption that higher variance parts of the key-space will be the part at higher pointer values within the string.
 Not following this assumption might result in reduced performance compared to following it.
