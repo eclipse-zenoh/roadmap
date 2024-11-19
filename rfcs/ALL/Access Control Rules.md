@@ -74,7 +74,7 @@ The *default_permission* field provides the implicit permission for the filterin
 The *rules* section itself has sub-fields: *id*, *messages*, *flows*, *permission*, *key_exprs*. The values provided in these fields set the explicit rules for the access control over individual messages:
 
 * **id**: unique string identifier within the rules list.
-* **messages**: supports six types of messsges - `put`, `delete`, `declare_subscriber`, `query`, `reply`, `declare_queryable`.
+* **messages**: supports the following types of messsges - `put`, `delete`, `declare_subscriber`, `query`, `reply`, `declare_queryable`, `liveliness_token`, `declare_liveliness_subscriber`, `liveliness_query`.
 * **flows**: supports two values - `egress` and `ingress`. If this field is not provided, the rule will apply to both flows.
 * **permission**: supports value `allow` or `deny`.
 * **key_exprs**: supports values of any key type or key-expression (set of keys) type, eg: `temp/room_1`, `temp/**` etc. (see [Key_Expressions](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Expressions.md))
@@ -208,4 +208,4 @@ Given Zenoh's priority is performance, a lot of care was taken while adding acce
 1. Keys (eg: `test/demo/a` ) are faster than key-expressions that use wildcards and DSL (eg: `test/demo/*` or`test/d$*`). Therefore, don't use them in your list of rules unless necessary. Verbatims are okay.
 2. The number of chunks in a key-expression also affects the performance since it increases the depth of the KeTree to be searched. So `test/demo/a` will be faster than `test/demo/a/b/c`. This loss of performance is not as drastic as that of using wildcards and DSL. However, still try to keep the number of chunks as low as possible in the key expression.
 3. Using both flows in the list of rules can cause a double verification of messages. If possible, only use a single flow in your rules.
-4. Tip 3 can be applied to all the other fields as well, though the performance improvement will not be as drastic. You should keep the list of rules as specific as possible. If you don't need to use certain messages or flows, you can skip them in the list of rules. For example, if your scenario uses only publishers and subscribers, maybe you don't have to set rules for `query`, `reply` and `declare_queryable` in your access control rules.
+4. Tip 3 can be applied to all the other fields as well, though the performance improvement will not be as drastic. You should keep the list of rules as specific as possible. If you don't need to use certain messages or flows, you can skip them in the list of rules. For example, if your scenario uses only publishers and subscribers, maybe you don't have to set rules for queryable and liveliness messages in your access control rules.
