@@ -1,6 +1,6 @@
 # Access Control Rules 
 
-Zenoh provides the option of controlling access to key-expressions (eg: `test/demo`) based on network interfaces (eg: `lo`) and other authentication mechanisms. The access control is managed by filtering messages: `put`, `delete`, `declare_subscriber`, `query`, `reply` and `declare_queryable`. This filteration can be applied on both incoming messages (`ingress`) and outgoing messages (`egress`).
+Zenoh provides the option of controlling access to key-expressions (eg: `test/demo`) based on network interfaces (eg: `lo`) and other authentication mechanisms. The access control is managed by filtering messages, which can be applied on both incoming messages (`ingress`) and outgoing messages (`egress`).
 
 Access control was added in Zenoh 0.11 and is described in the [Zenoh 0.11 Access Control Rules RFC](https://github.com/eclipse-zenoh/roadmap/blob/ca841fe219890bf73289089b520271d70ded89b6/rfcs/ALL/Access%20Control%20Rules.md). The following document describes the Zenoh 1.0 access control feature without highlighting the changes compared to the 0.11 version.
 
