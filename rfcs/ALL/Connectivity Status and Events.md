@@ -95,19 +95,19 @@ Enter 'q' to quit...
 >> [Subscriber] Received DELETE ('@/CE54FD5443C2432C840204E6D16DF877/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '')
 ```
 
-## Using the `QueryingSubscriber`
+## Using the `AdvancedSubscriber`
 
-When accessing connectivity events by declaring a `Subscriber`, it may happen that some *transport sessions* and *transport links* were opened before the `Subscriber` declaration. In order to access connectivity events that occurred before the `Subscriber` declaration as well as future connectivity events, a `zenoh-ext` `QueryingSubscriber` can be used.
+When accessing connectivity events by declaring a `Subscriber`, it may happen that some *transport sessions* and *transport links* were opened before the `Subscriber` declaration. In order to access connectivity events that occurred before the `Subscriber` declaration as well as future connectivity events, a `zenoh-ext` `AdvancedSubscriber` can be used.
 
 ## Example
 
-Using the `z_query_sub` example:
+Using the `z_advanced_sub` example:
 
 ```bash
-$ z_query_sub -k @/*/session/**
+$ z_advanced_sub -k @/*/session/**
 Opening session...
-Declaring QueryingSubscriber on @/*/session/** with an initial query on @/session/**
-Enter 'd' to issue the query again, or 'q' to quit...
+Declaring AdvancedSubscriber on @/*/session/**
+Press CTRL-C to quit...
 >> [Subscriber] Received PUT ('@/5AFCADB62D234A56ADB999E13E1D4392/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '{"zid":"CDDC6B8CAC0D4D52A0FB55DCD693F293","whatami":"router","is_qos":true,"is_shm":true}')
 >> [Subscriber] Received PUT ('@/5AFCADB62D234A56ADB999E13E1D4392/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/15974018027047406507': '{"src":"tcp/127.0.0.1:5555"},"dst":"tcp/127.0.0.1:7447","group":null,"mtu":65535,"is_reliable":true,"is_streamed":true')
 >> [Subscriber] Received DELETE ('@/5AFCADB62D234A56ADB999E13E1D4392/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/15974018027047406507': '')
