@@ -97,7 +97,7 @@ Enter 'q' to quit...
 
 ## Using the `QueryingSubscriber`
 
-When accessing connectivity events by declaring a `Subscriber`, it may happen that some *transport sessions* and *transport links* were openned before the `Subscriber` declaration. In order to access connectivity events that occured before the `Subscriber` declaration as well as future connectivity events, a `zenoh-ext` `QueryingSubscriber` can be used.
+When accessing connectivity events by declaring a `Subscriber`, it may happen that some *transport sessions* and *transport links* were opened before the `Subscriber` declaration. In order to access connectivity events that occurred before the `Subscriber` declaration as well as future connectivity events, a `zenoh-ext` `QueryingSubscriber` can be used.
 
 ## Example
 
