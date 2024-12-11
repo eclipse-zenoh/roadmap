@@ -13,23 +13,23 @@ The Zenoh `Session` provides to the application layer:
     - The opening of a new *transport link*
     - The closing of a *transport link*
 
-Those statuses and events are made available through resources in the following key space: `@/session/<local_zid>/**`.
+Those statuses and events are made available through resources in the following key space: `@/<local_zid>/session/**`.
 So that the connectivity status of a Zenoh `Session` can be accessed through queries. And the connectivity events of a Zenoh `Session` can be accessed through `Subscribers`.
 
 ## Connectivity status
 
 The Zenoh user `Session` embeds a `Queryable` with the following configuration:
-- key_expr: `@/session/<local_zid>/**`
+- key_expr: `@/<local_zid>/session/**`
 - allowed_origin: `SessionLocal`
 
 For each currently open unicast *transport session*, the `Queryable` will reply the following resource to matching queries: 
-- key: `@/session/<local_zid>/transport/unicast/<remote_zid>`
+- key: `@/<local_zid>/session/transport/unicast/<remote_zid>`
 - value: 
   - encoding: `application/json`
   - payload: a json encoded [`Transport`](#the-transport-type)
 
 For each currently open unicast *transport link*, the `Queryable` will reply the following resource to matching queries: 
-- key: `@/session/<local_zid>/transport/unicast/<remote_zid>/link/<link_id>`
+- key: `@/<local_zid>/session/transport/unicast/<remote_zid>/link/<link_id>`
 - value: 
   - encoding: `application/json`
   - payload: a json encoded [`Link`](#the-link-type)
@@ -39,11 +39,11 @@ For each currently open unicast *transport link*, the `Queryable` will reply the
 Using the `z_get` example: 
 
 ```bash
-$ z_get -s @/session/**
+$ z_get -s @/*/session/**
 Opening session...
-Sending Query '@/session/**'...
->> Received ('@/session/F36E4392B8274714BAA1A4F425F0FEED/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '{"zid":"CDDC6B8CAC0D4D52A0FB55DCD693F293","whatami":"router","is_qos":true,"is_shm":true}')
->> Received ('@/session/F36E4392B8274714BAA1A4F425F0FEED/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/6763370205260260746': '{"src":"tcp/127.0.0.1:55555","dst":"tcp/127.0.0.1:7447","group":null,"mtu":65535,"is_reliable":true,"is_streamed":true}')
+Sending Query '@/*/session/**'...
+>> Received ('@/F36E4392B8274714BAA1A4F425F0FEED/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '{"zid":"CDDC6B8CAC0D4D52A0FB55DCD693F293","whatami":"router","is_qos":true,"is_shm":true}')
+>> Received ('@/F36E4392B8274714BAA1A4F425F0FEED/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/6763370205260260746': '{"src":"tcp/127.0.0.1:55555","dst":"tcp/127.0.0.1:7447","group":null,"mtu":65535,"is_reliable":true,"is_streamed":true}')
 ```
 
 ## Connectivity Events
@@ -51,14 +51,14 @@ Sending Query '@/session/**'...
 ### Transport Events
 
 Each time a new unicast *transport session* is established with a new remote process (router, peer or client), a `put` is sent to matching `SessionLocal` subscribers:
-- key: `@/session/<local_zid>/transport/unicast/<remote_zid>`
+- key: `@/<local_zid>/session/transport/unicast/<remote_zid>`
 - kind: `Put`
 - value: 
   - encoding: `application/json`
   - payload: a json encoded [`Transport`](#the-transport-type)
 
 Each time a unicast *transport session* is closed, a `delete` is sent to matching `SessionLocal` subscribers:
-- key: `@/session/<local_zid>/transport/unicast/<remote_zid>`
+- key: `@/<local_zid>/session/transport/unicast/<remote_zid>`
 - kind: `Delete`
 - value: 
   - encoding: `<empty>`
@@ -67,14 +67,14 @@ Each time a unicast *transport session* is closed, a `delete` is sent to matchin
 ### Link Events
 
 Each time a new unicast *transport link* is established to a remote `Endpoint`, a `put` is sent to matching `SessionLocal` subscribers:
-- key: `@/session/<local_zid>/transport/unicast/<remote_zid>/link/<link_id>`
+- key: `@/<local_zid>/session/transport/unicast/<remote_zid>/link/<link_id>`
 - kind: `Put`
 - value: 
   - encoding: `application/json`
   - payload: a json encoded [`Link`](#the-link-type)
 
 Each time a unicast *transport link* is closed, a `delete` is sent to matching `SessionLocal` subscribers:
-- key: `@/session/<local_zid>/transport/unicast/<remote_zid>/link/<link_id>`
+- key: `@/<local_zid>/session/transport/unicast/<remote_zid>/link/<link_id>`
 - kind: `Delete`
 - value: 
   - encoding: `<empty>`
@@ -85,14 +85,14 @@ Each time a unicast *transport link* is closed, a `delete` is sent to matching `
 Using the `z_sub` example:
 
 ```bash
-$ z_sub -k @/session/** 
+$ z_sub -k @/*/session/** 
 Opening session...
-Declaring Subscriber on '@/session/**'...
+Declaring Subscriber on '@/*/session/**'...
 Enter 'q' to quit...
->> [Subscriber] Received PUT ('@/session/CE54FD5443C2432C840204E6D16DF877/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '{"zid":"CDDC6B8CAC0D4D52A0FB55DCD693F293","whatami":"router","is_qos":true,"is_shm":true}')
->> [Subscriber] Received PUT ('@/session/CE54FD5443C2432C840204E6D16DF877/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/3786076588163193314': '{"src":"tcp/127.0.0.1:55555","dst":"tcp/127.0.0.1:7447","group":null,"mtu":65535,"is_reliable":true,"is_streamed":true}')
->> [Subscriber] Received DELETE ('@/session/CE54FD5443C2432C840204E6D16DF877/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/3786076588163193314': '')
->> [Subscriber] Received DELETE ('@/session/CE54FD5443C2432C840204E6D16DF877/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '')
+>> [Subscriber] Received PUT ('@/CE54FD5443C2432C840204E6D16DF877/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '{"zid":"CDDC6B8CAC0D4D52A0FB55DCD693F293","whatami":"router","is_qos":true,"is_shm":true}')
+>> [Subscriber] Received PUT ('@/CE54FD5443C2432C840204E6D16DF877/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/3786076588163193314': '{"src":"tcp/127.0.0.1:55555","dst":"tcp/127.0.0.1:7447","group":null,"mtu":65535,"is_reliable":true,"is_streamed":true}')
+>> [Subscriber] Received DELETE ('@/CE54FD5443C2432C840204E6D16DF877/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/3786076588163193314': '')
+>> [Subscriber] Received DELETE ('@/CE54FD5443C2432C840204E6D16DF877/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '')
 ```
 
 ## Using the `QueryingSubscriber`
@@ -104,14 +104,14 @@ When accessing connectivity events by declaring a `Subscriber`, it may happen th
 Using the `z_query_sub` example:
 
 ```bash
-$ z_query_sub -k @/session/**
+$ z_query_sub -k @/*/session/**
 Opening session...
-Declaring QueryingSubscriber on @/session/** with an initial query on @/session/**
+Declaring QueryingSubscriber on @/*/session/** with an initial query on @/session/**
 Enter 'd' to issue the query again, or 'q' to quit...
->> [Subscriber] Received PUT ('@/session/5AFCADB62D234A56ADB999E13E1D4392/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '{"zid":"CDDC6B8CAC0D4D52A0FB55DCD693F293","whatami":"router","is_qos":true,"is_shm":true}')
->> [Subscriber] Received PUT ('@/session/5AFCADB62D234A56ADB999E13E1D4392/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/15974018027047406507': '{"src":"tcp/127.0.0.1:5555"},"dst":"tcp/127.0.0.1:7447","group":null,"mtu":65535,"is_reliable":true,"is_streamed":true')
->> [Subscriber] Received DELETE ('@/session/5AFCADB62D234A56ADB999E13E1D4392/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/15974018027047406507': '')
->> [Subscriber] Received DELETE ('@/session/5AFCADB62D234A56ADB999E13E1D4392/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '')
+>> [Subscriber] Received PUT ('@/5AFCADB62D234A56ADB999E13E1D4392/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '{"zid":"CDDC6B8CAC0D4D52A0FB55DCD693F293","whatami":"router","is_qos":true,"is_shm":true}')
+>> [Subscriber] Received PUT ('@/5AFCADB62D234A56ADB999E13E1D4392/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/15974018027047406507': '{"src":"tcp/127.0.0.1:5555"},"dst":"tcp/127.0.0.1:7447","group":null,"mtu":65535,"is_reliable":true,"is_streamed":true')
+>> [Subscriber] Received DELETE ('@/5AFCADB62D234A56ADB999E13E1D4392/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293/link/15974018027047406507': '')
+>> [Subscriber] Received DELETE ('@/5AFCADB62D234A56ADB999E13E1D4392/session/transport/unicast/CDDC6B8CAC0D4D52A0FB55DCD693F293': '')
 ```
 
 ## Connectivity types
