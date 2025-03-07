@@ -108,9 +108,28 @@ For example, none of the following KEs intersect: `my-api/@v1/**`, `my-api/@v2/*
 While this is technically a breaking change to the KE's behaviour and semantics, we don't believe that any current Zenoh user will be impacted.
 
 ### Namespaces
-The Zenoh team plans to introduce namespace features. These will be based on the convention that if a KE starts with a verbatim chunk `@x`, then its namespace is `@x`. If it doesn't start with such a chunk, it is considered to belong to the default namespace.
 
-Note that the default namespace and the `@` namespace (used by the Zenoh team for the adminspace) are distinct namespaces.
+**Namespace**
+
+A namespace is a subset of the full key expressions set that:*
+
+- is identified by a *non-wild key expression*
+- is composed of all the key expressions that start with this *non-wild key expression*
+
+A namespace is not (necessarily) *‘hermetic’*: there may exist key expressions that both matches expressions in the namespace and expressions out of the namespace. For example the key expression `zetta/*/paris` matches expressions in the `zetta/fr` namespace (i.e: `zetta/fr/paris` ) and out of the `zetta/fr` namespace (i.e: `zetta/nl/hengelo` ). Thus it is possible to publish/subscribe/query data from inside and outside a given namespace with a single key expression.
+
+**Hermetic Namespace**
+
+An hermetic namespace is a subset of the full key expressions set that:*
+
+- is identified by a *verbatim key expression* (key expression that contains a verbatim chunk) (examples: `@zetta`, `@zetta/fr`, `zetta/@fr`, `@zetta/@fr`)
+- is composed of all the key expressions that start with this *verbatim key expression*
+
+An hermetic namespace is also a valid namespace.
+
+An hermetic namespace is *‘hermetic’*: there is NO key expression that both matches expressions in the hermetic namespace and expressions out of the hermetic namespace. Thus it is NOT possible to publish/subscribe/query data from inside and outside a given hermetic namespace with a single key expression.
+
+Note that the default namespace (empty namespace) and the `@` namespace (used by the Zenoh team for the adminspace) are distinct namespaces.
 
 ### Separating KE sections
 One other use of verbatim chunks in KEs is to delimit variable-length sections of a KE. For example, if you were to use the `src/${src_path:**}/dst/${dst_path:**}` [format](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Formatters.md), how `src/./dst/dst/.` should be interpreted would be ambiguous. By using `src/${src_path:**}/@/dst/${dst_path:**}`, or even `src/dst/${src_path:**}/@/${dst_path:**}`, this ambiguity would disappear, since the `@` chunk cannot be matched by `**`.
