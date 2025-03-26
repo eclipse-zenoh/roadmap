@@ -9,13 +9,13 @@ However, its main use currently is to pass arguments to the queryables when perf
 ## Syntax
 The selector syntax is derived from the URL syntax, so let's start with a URL example (with some spacing for legibility):
 ```
-https://some.hostname.com / path/to/something ? arg1=val1&arg2=value%202
+https://some.hostname.com / path/to/something ? arg1=val1;arg2=value%202
 ^                       ^   ^               ^   ^                      ^
 |- Protocol + Hostname -| / |----- Path ----| ? |-- query parameters --|
 ```
 and an similar Zenoh Selector:
 ```
-path/**/something ? arg1=val1&arg2=value%202
+path/**/something ? arg1=val1;arg2=value%202
 ^               ^   ^                      ^
 |Key Expression-| ? |----- parameters -----|
 ```
@@ -29,7 +29,7 @@ The selector's `parameters` section functions just like query parameters:
 * It's separated from the path (Key Expr) by a `?`.
 * It's a `?` list of key-value pairs.
 * The first `=` in a key-value pair separates the key from the value.
-* If no `=` is found, the value is an empty string: `hello=there&kenobi` is interpreted as `{"hello": "there", "kenobi": ""}`.
+* If no `=` is found, the value is an empty string: `hello=there;kenobi` is interpreted as `{"hello": "there", "kenobi": ""}`.
 * The selector is assumed to be url-encoded: any character can be escaped using `%<charCode>`.
 
 There are however some additional conventions:
