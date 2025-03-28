@@ -1,0 +1,58 @@
+# Zenoh SHM
+
+**Supported platforms:**
+- Linux
+- MacOS (and other BSD)
+- Windows
+
+**API support:**
+- Rust
+- C
+- C++
+
+## General Concepts
+
+Zenoh SHM is designed to provide true zero-copy optimization abstracted behind the classic ZBytes API. The basic SHM data buffer type is `ZShm` (or it's mutable representation `ZShmMut`) which is typically wrapped into ZBytes, providing smooth integration into generalized application code:
+```
+________________________________                       ____________________________________
+|                              |                       |                                  |
+|        SHM Publisher         |     _____________     |     Non-SHM-aware Subscriber     |
+|                              |     |           |     |                                  |
+| alloc() -> ZShmMut -> ZBytes-|---->| Localhost |-----|-> ZBytes (implicitly wraps ZShm) |
+|______________________________|     |   Zenoh   |     |__________________________________|
+                                     |  Network  |                   
+                                     |___________|     ______________________________________
+                                           |           |                                    |
+                                           |           |        SHM-aware Subscriber        |
+                                           |           |                                    |
+                                           |-----------|--> ZBytes (implicitly wraps ZShm)  |
+                                                       | convertable to ZShm and/or ZShmMut |
+                                                       |____________________________________|
+```
+
+There are no limits on SHM buffer lifetime, number of shallow copies, number of republications, number of hops or network topology. SHM buffer is not pinned to particular Zenoh Session - it is possible to publish the same buffer multiple times through different Sessions. SHM buffer can be used anywhere where ZBytes is used.
+
+Zenoh Sessions probe and negotiate on SHM support. For participants not supporting SHM (because of their config, compilation flags, access rights or non-localhost location) any published SHM buffer will be implicitly converted into non-SHM one at the last hop before leaving SHM Domain boundary.
+
+SHM buffers are reference counted with additional mechanics applied to support dangling references recovery (in case of process holding SHM buffer crashes) to keep system robust.
+
+SHM buffers are allocated by `SharedMemoryProvider` objects. Providers are extendable, capable to use pluggable backends which implement allocator and utilize some SHM system API. The only one backend which is currently shipped with zenoh by-default is `PosixShmProviderBackend` which implements some general-purpose allocator and uses POSIX shared memory.
+
+## Docker
+
+General Docker shared-memory configuration instructions should be applied to enable container2container and\or container2host SHM operation.
+Additionally, on BSD systems Docker should also share tmp directory corresponding to Rust's `std::env::temp_dir()`.
+
+## Memory isolation and corruption safety
+
+Zenoh SHM is fully decentralized and each Provider owns it's own set of SHM segments. Zenoh team provides recommendations on building corruption-safe SHM applications on extended support basis.
+
+## Compilation
+
+In order to be able to receive and retransmit SHM buffers, you need to compile with `shared-memory` feature. In order to create new SHM buffers, you need to have both `shared-memory` and `unstable` features.
+
+## Examples
+
+- Allocation API: https://github.com/eclipse-zenoh/zenoh/blob/main/examples/examples/z_alloc_shm.rs
+- SHM Buffer API: https://github.com/eclipse-zenoh/zenoh/blob/main/examples/examples/z_bytes_shm.rs
+- How to publish SHM Buffer: https://github.com/eclipse-zenoh/zenoh/blob/main/examples/examples/z_pub_shm.rs
