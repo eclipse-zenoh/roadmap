@@ -12,7 +12,7 @@
 
 ## General Concepts
 
-Zenoh SHM is designed to provide true zero-copy optimization abstracted behind the classic ZBytes API. The basic SHM data buffer type is `ZShm` (or it's mutable representation `ZShmMut`) which is typically wrapped into ZBytes, providing smooth integration into generalized application code:
+Zenoh SHM is designed to provide true zero-copy optimization abstracted behind the classic ZBytes API. The basic SHM data buffer type is `ZShm` (or its mutable representation `ZShmMut`) which is typically wrapped into ZBytes, providing smooth integration into generalized application code:
 ```
 ________________________________                       ____________________________________
 |                              |                       |                                  |
