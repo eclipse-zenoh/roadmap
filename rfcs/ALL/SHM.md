@@ -45,7 +45,7 @@ Additionally, on BSD systems, Docker should also share the tmp directory corresp
 
 ## Memory isolation and corruption safety
 
-Zenoh SHM is fully decentralized and each Provider owns it's own set of SHM segments. Zenoh team provides recommendations on building corruption-safe SHM applications on extended support basis.
+Zenoh SHM is fully decentralized and each Provider owns its own set of SHM segments. The Zenoh team provides recommendations on building corruption-safe SHM applications on an extended support basis.
 
 ## Compilation
 
