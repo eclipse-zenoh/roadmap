@@ -36,7 +36,7 @@ Zenoh Sessions probe and negotiate SHM support. For participants not supporting 
 
 SHM buffers are reference counted with additional mechanics applied to support dangling reference recovery (in case a process holding an SHM buffer crashes) to keep the system robust.
 
-SHM buffers are allocated by `SharedMemoryProvider` objects. Providers are extendable, capable to use pluggable backends which implement allocator and utilize some SHM system API. The only one backend which is currently shipped with zenoh by-default is `PosixShmProviderBackend` which implements some general-purpose allocator and uses POSIX shared memory.
+SHM buffers are allocated by `SharedMemoryProvider` objects. Providers are extensible and capable of using pluggable backends which implement an allocator and utilize some SHM system API. The only backend currently shipped with Zenoh by default is `PosixShmProviderBackend`, which implements a general-purpose allocator and uses POSIX shared memory.
 
 ## Docker
 
