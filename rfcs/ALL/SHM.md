@@ -30,7 +30,7 @@ ________________________________                       _________________________
                                                        |____________________________________|
 ```
 
-There are no limits on SHM buffer lifetime, number of shallow copies, number of republications, number of hops or network topology. SHM buffer is not pinned to particular Zenoh Session - it is possible to publish the same buffer multiple times through different Sessions. SHM buffer can be used anywhere where ZBytes is used.
+There are no limits on SHM buffer lifetime, number of shallow copies, number of republications, number of hops, or network topology. SHM buffers are not pinned to a particular Zenoh Session - it is possible to publish the same buffer multiple times through different Sessions. SHM buffers can be used anywhere ZBytes is used.
 
 Zenoh Sessions probe and negotiate on SHM support. For participants not supporting SHM (because of their config, compilation flags, access rights or non-localhost location) any published SHM buffer will be implicitly converted into non-SHM one at the last hop before leaving SHM Domain boundary.
 
