@@ -41,7 +41,7 @@ SHM buffers are allocated by `SharedMemoryProvider` objects. Providers are exten
 ## Docker
 
 General Docker shared-memory configuration instructions should be applied to enable container-to-container and/or container-to-host SHM operation.
-Additionally, on BSD systems Docker should also share tmp directory corresponding to Rust's `std::env::temp_dir()`.
+Additionally, on BSD systems, Docker should also share the tmp directory corresponding to Rust's `std::env::temp_dir()`.
 
 ## Memory isolation and corruption safety
 
