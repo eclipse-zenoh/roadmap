@@ -34,7 +34,7 @@ There are no limits on SHM buffer lifetime, number of shallow copies, number of 
 
 Zenoh Sessions probe and negotiate SHM support. For participants not supporting SHM (due to their configuration, compilation flags, access rights, or non-localhost location), any published SHM buffer will be implicitly converted to a non-SHM buffer at the last hop before leaving the SHM Domain boundary.
 
-SHM buffers are reference counted with additional mechanics applied to support dangling references recovery (in case of process holding SHM buffer crashes) to keep system robust.
+SHM buffers are reference counted with additional mechanics applied to support dangling reference recovery (in case a process holding an SHM buffer crashes) to keep the system robust.
 
 SHM buffers are allocated by `SharedMemoryProvider` objects. Providers are extendable, capable to use pluggable backends which implement allocator and utilize some SHM system API. The only one backend which is currently shipped with zenoh by-default is `PosixShmProviderBackend` which implements some general-purpose allocator and uses POSIX shared memory.
 
