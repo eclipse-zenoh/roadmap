@@ -47,6 +47,41 @@ Additionally, on BSD systems, Docker should also share the tmp directory corresp
 
 Zenoh SHM is fully decentralized and each Provider owns its own set of SHM segments. The Zenoh team provides recommendations on building corruption-safe SHM applications on an extended support basis.
 
+## Segment garbage collection
+
+Zenoh SHM uses POSIX named shared memory as the default backend. POSIX semantics for named SHM objects (created with `shm_open`) require an explicit `shm_unlink` to remove the name — the kernel will not automatically unlink the name when processes exit. Because of that, Zenoh implements two complementary cleanup mechanisms to avoid leaving orphaned / dangling shared-memory segments around.
+
+**POSIX background (short)**
+
+Named POSIX shared-memory objects persist until they are explicitly unlinked (for example with `shm_unlink`). On Linux these objects are visible under `/dev/shm`, so orphaned segments are often observable there. Abnormal process termination or use of low-level exit paths (e.g. `_exit()` or a hard crash) can prevent normal object destructors and language-level cleanup from running, so relying solely on automatic destructor behaviour is unsafe.
+
+**Zenoh mechanics**
+
+***Destructor-based GC***
+
+When every segment owner across all processes is dropped (for example: session transports closed, SHM provider stopped, and all buffer references released), the last process that used the segment unlinks it.
+Practical note: orderly shutdown is required for this to work reliably. Abnormal termination or using APIs that bypass normal teardown can prevent destructors/cleanup from running.
+
+***Dangling-segment GC***
+
+To handle cases where an owner crashed or called an exit path that didn’t run teardown, Zenoh includes a dangling-segment detection and cleanup routine. This routine can detect leftover segments and remove them; it is triggered in several situations:
+
+1. When a newly started process first attempts to use SHM (Zenoh inspects existing segments and cleans up detected dangling ones).
+
+2. On orderly exit of a SHM-enabled process (additional sanity checks/cleanup can run).
+
+3. When explicitly invoked by the user through the Zenoh API (manual/forced cleanup).
+
+**Recommendations & best practices**
+
+Always perform an orderly shutdown of your Zenoh resources on process termination: close sessions/transports, drop buffers, stop the SHM provider, then exit normally. This makes the destructor-based GC work reliably.
+
+Avoid using low-level exit paths that skip normal teardown (e.g., `_exit()`), and handle signals that may interrupt normal shutdown. Register graceful shutdown handlers so cleanup runs even on `SIGINT`/`SIGTERM`.
+
+If you expect processes to crash or be killed frequently, rely on the dangling GC as a safety net — but still try to minimize crashes.
+
+Provide an explicit operator/maintenance path in your deployment to trigger the user API cleanup for special cases (for example, during maintenance or automated restarts).
+
 ## Compilation
 
 In order to be able to receive and retransmit SHM buffers, you need to compile with `shared-memory` feature. In order to create new SHM buffers, you need to have both `shared-memory` and `unstable` features.
