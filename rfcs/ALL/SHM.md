@@ -39,7 +39,11 @@ ________________________________                       _________________________
 - Network hops: There is no restriction on hops or network topology within the same host.
 - Anywhere `ZBytes` is accepted: SHM buffers are fully compatible with any Zenoh API that consumes `ZBytes`.
 
-Zenoh sessions automatically negotiate SHM support when connecting peers. If sender sends an SHM buffer but a receiver (or an intermediate node) does not support shared memory—due to configuration, build options, access rights, or being on another host—Zenoh transparently falls back to copying. In that case, the buffer is converted into a regular `ZBytes` payload at the edge of the SHM domain, and the subscriber receives the data normally over the network.
+**Interoperability**
+
+Zenoh sessions automatically negotiate SHM support when doing Zenoh handshake. During the negotiation, each link partner claim SHM support, SHM version and a list of SHM protocols that partner *can read*. As part of this negotiation, link partners also make mutual SHM availability check - making sure that they can access each other's SHM segments.
+
+If sender sends an SHM buffer but a receiver (or an intermediate node) does not support shared memory by negotiation — Zenoh transparently falls back to copying. In that case, the buffer is converted into a regular `ZBytes` payload at the edge of the SHM domain, and the subscriber receives the data normally over the network.
 
 **Buffer memory management**
 
@@ -57,25 +61,45 @@ Allocated buffers are garbage collected when all the corresponding references ac
 > 
 > GC'ing might take time and produce latency jitter, especially if there are many buffers in-flight. If this becomes an issue, consider optimizing time points when you allocate and\or use separate `garbage_collect()` method of `SharedMemoryProvider`.
 
+## SHM Providers
+
+Zenoh SHM allocator implements a two-layer model: an `ShmProvider` (the object the rest of Zenoh talks to) and an `ShmProviderBackend` (the concrete implementation that knows how to allocate and manage the shared memory — POSIX, custom kernel API, special allocation strategies, etc.). This makes it straightforward to plug your own backend if you need a custom allocator or a different OS/shared-memory API.
+
+**ShmProvider**: the high-level interface Zenoh code (sessions, publishers, subscribers) uses to allocate, reference and publish SHM buffers. It provides allocation policies (block-on, defragment, garbage-collect, etc.), alignment control, manual invalidation, and reference-counted buffer handles that survive abnormal process termination robustly. 
+
+**ShmProviderBackend**: the low-level “pluggable” implementation — it encapsulates the platform/strategy (POSIX shm_open/mmap, System V, a kernel driver, a pre-allocated hugepage region, or a vendor-specific API). The backend exposes the primitive operations (allocate chunk, free chunk, defragment) and a protocol ID so different backends/clients can be kept distinct.
+
+Use cases for a custom backend:
+
+- Use a non-POSIX SHM mechanism (e.g., vendor kernel module, DPDK hugepage pool, specialized RTOS API).
+
+- Implement custom allocation strategies.
+
+- Interpose custom safety / security checks on buffer creation.
+
+- Use hardware NIC-attached memory, or a memory region shared with other subsystems.
+
 ## Implicit transport optimization
 
-Zenoh SHM performs an automatic transport optimization to minimize copies for large payloads. If session sends a non-SHM `ZBytes` payload that exceeds a configurable size threshold and the receiving neighbor session supports SHM, Zenoh will implicitly convert that payload into an SHM buffer (copying the data once into a `ZShm` region). Currently, this conversion happens separately for each neighbor, but we plan to optimize this.
+Zenoh SHM performs an automatic transport optimization to minimize copies for large payloads. If session sends a non-SHM `ZBytes` payload that exceeds a configurable size threshold and the link partner supports SHM, Zenoh will implicitly convert that payload into an SHM buffer (copying the data once into a `ZShm` region). Currently, this conversion happens separately for each link partner.
+
+Each Zenoh Session uses own internal `ShmProvider` for this type of optimization. The usage policy of this provider is lazy-opportunistic: provider is created lazily in seperate blocking task on the first demand and used only if available - only when initialization task completed and provider has free memory to perform allocation. In other words, it is not guaranteed that optimization will happen for every buffer.
 
 This behavior is especially valuable for routers or gateways that receive large packets from the network and must forward them to several local processes.
 
-The implicit transport optimization settings can be found in our config JSON under `transport_optimization` section.
+The implicit transport optimization settings can be found in our [config JSON](https://github.com/eclipse-zenoh/zenoh/blob/3b0cef3049bdad06b113af4156477560cae327ee/DEFAULT_CONFIG.json5#L737).
 
 ## Typed API (Rust only)
 
-Besides common raw-byte-oriented API (`ZShm` and `ZShmMut`) typed API is also supported through `Typed` and `TypedLayout` generics. See "Allocation API" at the Examples section.
+Besides common raw-byte-oriented API (`ZShm` and `ZShmMut`) typed API is also supported through `Typed` and `TypedLayout` generics. See [Allocation API](https://github.com/eclipse-zenoh/zenoh/blob/main/examples/examples/z_alloc_shm.rs) and [zshm](https://github.com/kydos/zshm) examples.
 
 ## Virtual memory management
 
-Zenoh locks and pre-commits shared-memory pages to minimize latency. This means once a buffer is allocated, it will not fault or be swapped out during use, ensuring consistent performance.
+Zenoh pre-commits and locks shared-memory pages/ This means once a buffer is allocated, it will not fault or be swapped out during use, ensuring consistent performance.
 
 > **Best practices**
 > 
-> Make sure your system has enough free RAM to hold all SHM segments, since locked memory is not overcommitted. 
+> Make sure your system has enough free RAM to hold all SHM segments, since our memory is not overcommitted. 
 > 
 > On Linux, raise the memlock limit if needed (for example, `ulimit -l unlimited`) so Zenoh can lock the necessary memory.
 
