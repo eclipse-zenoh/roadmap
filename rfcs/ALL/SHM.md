@@ -83,7 +83,7 @@ Use cases for a custom backend:
 
 Zenoh SHM performs an automatic transport optimization to minimize copies for large payloads. If session sends a non-SHM `ZBytes` payload that exceeds a configurable size threshold and the link partner node supports SHM, Zenoh will implicitly convert that payload into an SHM buffer (copying the data once into a `ZShm` region). Currently, this conversion happens separately for each link partner node.
 
-Each Zenoh Session uses own internal `ShmProvider` for this type of optimization. The usage policy of this provider is lazy-opportunistic: provider is created lazily in seperate blocking task on the first demand and used only if available - only when initialization task completed and provider has free memory to perform allocation. In other words, it is not guaranteed that optimization will happen for every buffer.
+Each Zenoh Session uses own internal `ShmProvider` for this type of optimization. The usage policy of this provider is lazy-opportunistic: provider is created lazily in separate blocking task on the first demand and used only if available - only when initialization task completed and provider has free memory to perform allocation. In other words, it is not guaranteed that optimization will happen for every buffer.
 
 This behavior is especially valuable for routers or gateways that receive large packets from the network and must forward them to several local processes.
 
@@ -95,7 +95,7 @@ Besides common raw-byte-oriented API (`ZShm` and `ZShmMut`) typed API is also su
 
 ## Virtual memory management
 
-Zenoh pre-commits and locks shared-memory pages/ This means once a buffer is allocated, it will not fault or be swapped out during use, ensuring consistent performance.
+Zenoh pre-commits and locks shared-memory pages. This means once a buffer is allocated, it will not fault or be swapped out during use, ensuring consistent performance.
 
 > **Best practices**
 > 
