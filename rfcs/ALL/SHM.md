@@ -41,7 +41,7 @@ ________________________________                       _________________________
 
 **Interoperability**
 
-Zenoh sessions automatically negotiate SHM support when doing Zenoh handshake. During the negotiation, each link partner claim SHM support, SHM version and a list of SHM protocols that partner *can read*. As part of this negotiation, link partners also make mutual SHM availability check - making sure that they can access each other's SHM segments.
+Zenoh sessions automatically negotiate SHM support when doing Zenoh handshake. During the negotiation, each link partner node claim SHM support, SHM version and a list of SHM protocols that partner *can read*. As part of this negotiation, link partner nodes also make mutual SHM availability check - making sure that they can access each other's SHM segments.
 
 If sender sends an SHM buffer but a receiver (or an intermediate node) does not support shared memory by negotiation — Zenoh transparently falls back to copying. In that case, the buffer is converted into a regular `ZBytes` payload at the edge of the SHM domain, and the subscriber receives the data normally over the network.
 
@@ -81,7 +81,7 @@ Use cases for a custom backend:
 
 ## Implicit transport optimization
 
-Zenoh SHM performs an automatic transport optimization to minimize copies for large payloads. If session sends a non-SHM `ZBytes` payload that exceeds a configurable size threshold and the link partner supports SHM, Zenoh will implicitly convert that payload into an SHM buffer (copying the data once into a `ZShm` region). Currently, this conversion happens separately for each link partner.
+Zenoh SHM performs an automatic transport optimization to minimize copies for large payloads. If session sends a non-SHM `ZBytes` payload that exceeds a configurable size threshold and the link partner node supports SHM, Zenoh will implicitly convert that payload into an SHM buffer (copying the data once into a `ZShm` region). Currently, this conversion happens separately for each link partner node.
 
 Each Zenoh Session uses own internal `ShmProvider` for this type of optimization. The usage policy of this provider is lazy-opportunistic: provider is created lazily in seperate blocking task on the first demand and used only if available - only when initialization task completed and provider has free memory to perform allocation. In other words, it is not guaranteed that optimization will happen for every buffer.
 
