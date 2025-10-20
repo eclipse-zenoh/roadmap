@@ -57,7 +57,7 @@ Allocated buffers are garbage collected when all the corresponding references ac
 
 > **Best practices**
 > 
-> The optimal `SharedMemoryProvider` capacity is usually smth around twice the sum of in-flight payloads. Providing too small amount of memory might cause out-of-memory hickups while providing too big memory regions is not cache-friendly.
+> The optimal `SharedMemoryProvider` capacity is usually something around twice the sum of in-flight payloads. Providing too small amount of memory might cause out-of-memory hickups while providing too big memory regions is not cache-friendly.
 > 
 > GC'ing might take time and produce latency jitter, especially if there are many buffers in-flight. If this becomes an issue, consider optimizing time points when you allocate and\or use separate `garbage_collect()` method of `SharedMemoryProvider`.
 
