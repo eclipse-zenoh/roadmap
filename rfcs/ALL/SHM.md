@@ -41,7 +41,7 @@ ________________________________                       _________________________
 
 **Interoperability**
 
-Zenoh sessions automatically negotiate SHM support when doing Zenoh handshake. During the negotiation, each link partner node claim SHM support, SHM version and a list of SHM protocols that partner *can read*. As part of this negotiation, link partner nodes also make mutual SHM availability check - making sure that they can access each other's SHM segments.
+Zenoh sessions automatically negotiate SHM support when doing Zenoh handshake. During the negotiation, each link partner node claims SHM support, SHM version and a list of SHM protocols that partner *can read*. As part of this negotiation, link partner nodes also make mutual SHM availability check - making sure that they can access each other's SHM segments.
 
 If sender sends an SHM buffer but a receiver (or an intermediate node) does not support shared memory by negotiation — Zenoh transparently falls back to copying. In that case, the buffer is converted into a regular `ZBytes` payload at the edge of the SHM domain, and the subscriber receives the data normally over the network.
 
