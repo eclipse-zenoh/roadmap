@@ -9,10 +9,12 @@
 - Rust
 - C
 - C++
+- Python
 
 ## General Concepts
 
-Zenoh SHM is designed to provide true zero-copy optimization abstracted behind the classic ZBytes API. The basic SHM data buffer type is `ZShm` (or its mutable representation `ZShmMut`) which is typically wrapped into ZBytes, providing smooth integration into generalized application code:
+Zenoh Shared Memory (SHM) provides zero-copy data transfer between processes on the same host while preserving the standard `ZBytes` interface. The core buffer types are `ZShm` (immutable) and `ZShmMut` (mutable), which can be wrapped in `ZBytes` for compatibility with existing code. In practice, a publisher allocates a `ZShmMut`, wraps it in `ZBytes`, and sends it. A subscriber on the same host can receive the buffer without copying (it still points to the original shared memory). If a subscriber does not support SHM (or is on a different host), Zenoh automatically converts the shared buffer into a normal in-memory copy at the boundary of the SHM domain. In that case, the subscriber receives a normal copy of the data over the network.
+
 ```
 ________________________________                       ____________________________________
 |                              |                       |                                  |
@@ -30,18 +32,86 @@ ________________________________                       _________________________
                                                        |____________________________________|
 ```
 
-There are no limits on SHM buffer lifetime, number of shallow copies, number of republications, number of hops, or network topology. SHM buffers are not pinned to a particular Zenoh Session - it is possible to publish the same buffer multiple times through different Sessions. SHM buffers can be used anywhere ZBytes is used.
+**Fewer Constraints**
+- Buffer lifetime: An SHM buffer can live indefinitely and is not tied to any single session or process.
+- Shallow copies: You can take unlimited references (shallow copies) to a shared buffer.
+- Multiple publications: The same buffer can be published multiple times, even through different Zenoh sessions.
+- Network hops: There is no restriction on hops or network topology within the same host.
+- Anywhere `ZBytes` is accepted: SHM buffers are fully compatible with any Zenoh API that consumes `ZBytes`.
 
-Zenoh Sessions probe and negotiate SHM support. For participants not supporting SHM (due to their configuration, compilation flags, access rights, or non-localhost location), any published SHM buffer will be implicitly converted to a non-SHM buffer at the last hop before leaving the SHM Domain boundary.
+**Interoperability**
 
-SHM buffers are reference counted with additional mechanics applied to support dangling reference recovery (in case a process holding an SHM buffer crashes) to keep the system robust.
+Zenoh sessions automatically negotiate SHM support when doing Zenoh handshake. During the negotiation, each link partner node claims SHM support, SHM version and a list of SHM protocols that partner *can read*. As part of this negotiation, link partner nodes also make mutual SHM availability check - making sure that they can access each other's SHM segments.
 
-SHM buffers are allocated by `SharedMemoryProvider` objects. Providers are extensible and capable of using pluggable backends which implement an allocator and utilize some SHM system API. The only backend currently shipped with Zenoh by default is `PosixShmProviderBackend`, which implements a general-purpose allocator and uses POSIX shared memory.
+If sender sends an SHM buffer but a receiver (or an intermediate node) does not support shared memory by negotiation — Zenoh transparently falls back to copying. In that case, the buffer is converted into a regular `ZBytes` payload at the edge of the SHM domain, and the subscriber receives the data normally over the network.
+
+**Buffer memory management**
+
+Each `ZShm` buffer is reference-counted and Zenoh maintains metadata to handle dangling references (for example, if a process crashes while holding a buffer).
+
+Buffers are allocated by `SharedMemoryProvider`. Providers are extensible and capable of using pluggable backends which implement an allocator and utilize some SHM system API. The only backend currently shipped with Zenoh by default is `PosixShmProviderBackend`, which implements a general-purpose allocator and uses POSIX shared memory.
+
+Allocated buffers are garbage collected when all the corresponding references across zenoh network are dropped. The garbage collection process is currently triggered and run in the context of following operations:
+- SHM buffer allocation with any type of allocation policy that intends GC'ing.
+- `garbage_collect()` method of `SharedMemoryProvider`
+
+> **Best practices**
+> 
+> The optimal `SharedMemoryProvider` capacity is usually something around twice the sum of in-flight payloads. Providing too small amount of memory might cause out-of-memory hickups while providing too big memory regions is not cache-friendly.
+> 
+> GC'ing might take time and produce latency jitter, especially if there are many buffers in-flight. If this becomes an issue, consider optimizing time points when you allocate and\or use separate `garbage_collect()` method of `SharedMemoryProvider`.
+
+## SHM Providers
+
+Zenoh SHM allocator implements a two-layer model: an `ShmProvider` (the object the rest of Zenoh talks to) and an `ShmProviderBackend` (the concrete implementation that knows how to allocate and manage the shared memory — POSIX, custom kernel API, special allocation strategies, etc.). This makes it straightforward to plug your own backend if you need a custom allocator or a different OS/shared-memory API.
+
+**ShmProvider**: the high-level interface Zenoh code (sessions, publishers, subscribers) uses to allocate, reference and publish SHM buffers. It provides allocation policies (block-on, defragment, garbage-collect, etc.), alignment control, manual invalidation, and reference-counted buffer handles that survive abnormal process termination robustly. 
+
+**ShmProviderBackend**: the low-level “pluggable” implementation — it encapsulates the platform/strategy (POSIX shm_open/mmap, System V, a kernel driver, a pre-allocated hugepage region, or a vendor-specific API). The backend exposes the primitive operations (allocate chunk, free chunk, defragment) and a protocol ID so different backends/clients can be kept distinct.
+
+Use cases for a custom backend:
+
+- Use a non-POSIX SHM mechanism (e.g., vendor kernel module, DPDK hugepage pool, specialized RTOS API).
+
+- Implement custom allocation strategies.
+
+- Interpose custom safety / security checks on buffer creation.
+
+- Use hardware NIC-attached memory, or a memory region shared with other subsystems.
+
+## Implicit transport optimization
+
+Zenoh SHM performs an automatic transport optimization to minimize copies for large payloads. If session sends a non-SHM `ZBytes` payload that exceeds a configurable size threshold and the link partner node supports SHM, Zenoh will implicitly convert that payload into an SHM buffer (copying the data once into a `ZShm` region). Currently, this conversion happens separately for each link partner node.
+
+Each Zenoh Session uses own internal `ShmProvider` for this type of optimization. The usage policy of this provider is lazy-opportunistic: provider is created lazily in separate blocking task on the first demand and used only if available - only when initialization task completed and provider has free memory to perform allocation. In other words, it is not guaranteed that optimization will happen for every buffer.
+
+This behavior is especially valuable for routers or gateways that receive large packets from the network and must forward them to several local processes.
+
+The implicit transport optimization settings can be found in our [config JSON](https://github.com/eclipse-zenoh/zenoh/blob/3b0cef3049bdad06b113af4156477560cae327ee/DEFAULT_CONFIG.json5#L737).
+
+## Typed API (Rust only)
+
+Besides common raw-byte-oriented API (`ZShm` and `ZShmMut`) typed API is also supported through `Typed` and `TypedLayout` generics. See [Allocation API](https://github.com/eclipse-zenoh/zenoh/blob/main/examples/examples/z_alloc_shm.rs) and [zshm](https://github.com/kydos/zshm) examples.
+
+## Virtual memory management
+
+Zenoh pre-commits and locks shared-memory pages. This means once a buffer is allocated, it will not fault or be swapped out during use, ensuring consistent performance.
+
+> **Best practices**
+> 
+> Make sure your system has enough free RAM to hold all SHM segments, since our memory is not overcommitted. 
+> 
+> On Linux, raise the memlock limit if needed (for example, `ulimit -l unlimited`) so Zenoh can lock the necessary memory.
 
 ## Docker
 
-General Docker shared-memory configuration instructions should be applied to enable container-to-container and/or container-to-host SHM operation.
-Additionally, on BSD systems, Docker should also share the tmp directory corresponding to Rust's `std::env::temp_dir()`.
+Zenoh SHM is fully compatible with Docker.
+
+> **Best practices**
+> 
+> Ensure relevant containers share `/dev/shm` or a named volume for shared memory.
+> 
+> On macOS/BSD Docker, also share the host’s `/tmp` (Rust’s default `temp_dir`) across containers.
 
 ## Memory isolation and corruption safety
 
@@ -72,19 +142,19 @@ To handle cases where an owner crashed or called an exit path that didn’t run 
 
 3. When explicitly invoked by the user through the Zenoh API (manual/forced cleanup).
 
-**Recommendations & best practices**
-
-Always perform an orderly shutdown of your Zenoh resources on process termination: close sessions/transports, drop buffers, stop the SHM provider, then exit normally. This makes the destructor-based GC work reliably.
-
-Avoid using low-level exit paths that skip normal teardown (e.g., `_exit()`), and handle signals that may interrupt normal shutdown. Register graceful shutdown handlers so cleanup runs even on `SIGINT`/`SIGTERM`.
-
-If you expect processes to crash or be killed frequently, rely on the dangling GC as a safety net — but still try to minimize crashes.
-
-Provide an explicit operator/maintenance path in your deployment to trigger the user API cleanup for special cases (for example, during maintenance or automated restarts).
+> **Best practices**
+> 
+> Always perform an orderly shutdown of your Zenoh resources on process termination: close sessions/transports, drop buffers, stop the SHM provider, then exit normally. This makes the destructor-based GC work reliably.
+> 
+> Avoid using low-level exit paths that skip normal teardown (e.g., `_exit()`), and handle signals that may interrupt normal shutdown. Register graceful shutdown handlers so cleanup runs even on `SIGINT`/`SIGTERM`.
+> 
+> If you expect processes to crash or be killed frequently, rely on the dangling GC as a safety net — but still try to minimize crashes.
+> 
+> Provide an explicit operator/maintenance path in your deployment to trigger the user API cleanup for special cases (for example, during maintenance or automated restarts).
 
 ## Compilation
 
-In order to be able to receive and retransmit SHM buffers, you need to compile with `shared-memory` feature. In order to create new SHM buffers, you need to have both `shared-memory` and `unstable` features.
+In order to be able to receive and retransmit SHM buffers, you need to compile with `shared-memory` feature. In order to create new SHM buffers, you need to have both `shared-memory` and `unstable` features because SHM API is unstable.
 
 ## Examples
 
