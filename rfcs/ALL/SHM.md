@@ -70,8 +70,10 @@ For mission-critical deployments, the Zenoh team can provide extended-support gu
 
 > **Best practices**
 > 
-> Because reclaiming lost SHM buffers can incur additional latency, design systems to minimize lost buffer references. In particular, prefer the Reliable reliability option for SHM publications and use it together with reliable transport protocols.
-> > Note: this recommendation does not apply to congestion-control Drop behavior — messages intentionally dropped by congestion control are not treated the same as lost references.
+> - Because reclaiming lost SHM buffers can incur additional latency, design systems to minimize lost buffer references. In particular, prefer the Reliable reliability option for SHM publications and use it together with reliable transport protocols.
+> > Note: this recommendation does not apply to congestion-control `Drop` behavior — messages intentionally dropped by congestion control are not treated the same as lost references.
+> 
+> - Avoid `Block` under heavy congestion. Sending SHM messages over transports that are heavily congested and use the congestion-control mode `Block` cancause messages to be invalidated in-flight. Under severe congestion, `Block` can cause publishers to stall and may lead to messages being garbage-collected to free resources, producing unexpected message loss.
 
 **Buffer memory management**
 
@@ -85,9 +87,9 @@ Allocated buffers are garbage collected when all the corresponding references ac
 
 > **Best practices**
 > 
-> The optimal `SharedMemoryProvider` capacity is usually something around twice the sum of in-flight payloads. Providing too small amount of memory might cause out-of-memory hickups while providing too big memory regions is not cache-friendly.
+> - The optimal `SharedMemoryProvider` capacity is usually something around twice the sum of in-flight payloads. Providing too small amount of memory might cause out-of-memory hickups while providing too big memory regions is not cache-friendly.
 > 
-> GC'ing might take time and produce latency jitter, especially if there are many buffers in-flight. If this becomes an issue, consider optimizing time points when you allocate and\or use separate `garbage_collect()` method of `SharedMemoryProvider`.
+> - GC'ing might take time and produce latency jitter, especially if there are many buffers in-flight. If this becomes an issue, consider optimizing time points when you allocate and\or use separate `garbage_collect()` method of `SharedMemoryProvider`.
 
 ## SHM Providers
 
@@ -138,15 +140,19 @@ The implicit transport optimization settings can be found in our [config JSON](h
 
 Besides common raw-byte-oriented API (`ZShm` and `ZShmMut`) typed API is also supported through `Typed` and `TypedLayout` generics. See [Allocation API](https://github.com/eclipse-zenoh/zenoh/blob/main/examples/examples/z_alloc_shm.rs) and [zshm](https://github.com/kydos/zshm) examples.
 
+## On the wire
+
+From the wire perspective, an SHM buffer reference is transmitted as a small Zenoh message with a 16-byte payload. It travels over the same transport links and configurations as any other Zenoh message, making SHM fully compatible with existing link setups.
+
 ## Virtual memory management
 
 Zenoh pre-commits and locks shared-memory pages. This means once a buffer is allocated, it will not fault or be swapped out during use, ensuring consistent performance.
 
 > **Best practices**
 > 
-> Make sure your system has enough free RAM to hold all SHM segments, since our memory is not overcommitted. 
+> - Make sure your system has enough free RAM to hold all SHM segments, since our memory is not overcommitted. 
 > 
-> On Linux, raise the memlock limit if needed (for example, `ulimit -l unlimited`) so Zenoh can lock the necessary memory.
+> - On Linux, raise the memlock limit if needed (for example, `ulimit -l unlimited`) so Zenoh can lock the necessary memory.
 
 ## Docker
 
@@ -154,9 +160,9 @@ Zenoh SHM is fully compatible with Docker.
 
 > **Best practices**
 > 
-> Ensure relevant containers share `/dev/shm` or a named volume for shared memory.
+> - Ensure relevant containers share `/dev/shm` or a named volume for shared memory.
 > 
-> On macOS/BSD Docker, also share the host’s `/tmp` (Rust’s default `temp_dir`) across containers.
+> - On macOS/BSD Docker, also share the host’s `/tmp` (Rust’s default `temp_dir`) across containers.
 
 ## Segment garbage collection
 
@@ -185,13 +191,13 @@ To handle cases where an owner crashed or called an exit path that didn’t run 
 
 > **Best practices**
 > 
-> Always perform an orderly shutdown of your Zenoh resources on process termination: close sessions/transports, drop buffers, stop the SHM provider, then exit normally. This makes the destructor-based GC work reliably.
+> - Always perform an orderly shutdown of your Zenoh resources on process termination: close sessions/transports, drop buffers, stop the SHM provider, then exit normally. This makes the destructor-based GC work reliably.
 > 
-> Avoid using low-level exit paths that skip normal teardown (e.g., `_exit()`), and handle signals that may interrupt normal shutdown. Register graceful shutdown handlers so cleanup runs even on `SIGINT`/`SIGTERM`.
+> - Avoid using low-level exit paths that skip normal teardown (e.g., `_exit()`), and handle signals that may interrupt normal shutdown. Register graceful shutdown handlers so cleanup runs even on `SIGINT`/`SIGTERM`.
 > 
-> If you expect processes to crash or be killed frequently, rely on the dangling GC as a safety net — but still try to minimize crashes.
+> - If you expect processes to crash or be killed frequently, rely on the dangling GC as a safety net — but still try to minimize crashes.
 > 
-> Provide an explicit operator/maintenance path in your deployment to trigger the user API cleanup for special cases (for example, during maintenance or automated restarts).
+> - Provide an explicit operator/maintenance path in your deployment to trigger the user API cleanup for special cases (for example, during maintenance or automated restarts).
 
 ## Compilation
 
