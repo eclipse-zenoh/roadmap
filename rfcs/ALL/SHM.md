@@ -73,7 +73,7 @@ For mission-critical deployments, the Zenoh team can provide extended-support gu
 > - Because reclaiming lost SHM buffers can incur additional latency, design systems to minimize lost buffer references. In particular, prefer the Reliable reliability option for SHM publications and use it together with reliable transport protocols.
 > > Note: this recommendation does not apply to congestion-control `Drop` behavior — messages intentionally dropped by congestion control are not treated the same as lost references.
 > 
-> - Avoid `Block` under heavy congestion. Sending SHM messages over transports that are heavily congested and use the congestion-control mode `Block` cancause messages to be invalidated in-flight. Under severe congestion, `Block` can cause publishers to stall and may lead to messages being garbage-collected to free resources, producing unexpected message loss.
+> - Avoid `Block` under heavy congestion. Sending SHM messages over transports that are heavily congested and use the congestion-control mode `Block` can cause messages to be invalidated in-flight. Under severe congestion, `Block` can cause publishers to stall and may lead to messages being garbage-collected to free resources, producing unexpected message loss.
 
 **Buffer memory management**
 
