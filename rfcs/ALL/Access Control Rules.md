@@ -74,25 +74,29 @@ The *default_permission* field provides the implicit permission for the filterin
 The *rules* section itself has sub-fields: *id*, *messages*, *flows*, *permission*, *key_exprs*. The values provided in these fields set the explicit rules for the access control over individual messages:
 
 * **id**: unique string identifier within the rules list.
-* **messages**: supports the following types of messsges - `put`, `delete`, `declare_subscriber`, `query`, `reply`, `declare_queryable`, `liveliness_token`, `declare_liveliness_subscriber`, `liveliness_query`.
+* **messages**: supports the following types of messages - `put`, `delete`, `declare_subscriber`, `query`, `reply`, `declare_queryable`, `liveliness_token`, `declare_liveliness_subscriber`, `liveliness_query`.
 * **flows**: supports two values - `egress` and `ingress`. If this field is not provided, the rule will apply to both flows.
 * **permission**: supports value `allow` or `deny`.
 * **key_exprs**: supports values of any key type or key-expression (set of keys) type, eg: `temp/room_1`, `temp/**` etc. (see [Key_Expressions](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Expressions.md))
 
-The *subjects* section has the following sub-fields: *id*, *interfaces*, *cert_common_names*, *usernames*. The values provided are matched with the characteristics of connected Zenoh instances, in order to identify which rules to apply on which instance's messages.
+The *subjects* section's fields are matched with the characteristics of connected Zenoh instances, in order to identify which rules to apply on which instance's messages. The following is a list of supported fields:
 
 * **id**: unique string identifier within the subjects list.
 * **interfaces**: list of local network interfaces through which the configured instance communicates with the remote instance to be matched. Supports all possible values for network interfaces, eg: `lo`, `lo0` etc. If this field is not provided, it will match instances connected on any network interfaces, or none (currently possible on certain link protocols, ex: *websocket*).
 * **cert_common_names**: list of certificate common names which are matched with the respective certificate content of the remote instances connected using TLS or QUIC transport. This requires that the local instance has a valid TLS authentication configuration. If this field is not provided, it will match with instances that have any certificate common name or none.
 * **usernames**: list of usernames to be matched with the authentication config of remote instances. This requires that the local instance has a valid user-password authentication configuration. If this field is not provided, it will match with instances that have any username or none.
+* **link_protocols**: list of link protocols connecting with the remote instance. Note that the evaluation of this filter is performed depending on existing connections, and not depending on which link the message is scheduled on (in case of multilink).
+If not provided, this subject will match remote connections of all supported link protocols.
+* **zids**: list of Zenoh IDs. Because the Zenoh ID is not backed by an authentication mechanism, it can only be trusted for ACL if it is dynamically added/removed by internal and dedicated Zenoh mechanisms when transports are opened/closed.
+If managed manually in ACL config, it can be useful for prototyping, but its use in production is highly discouraged since it is easily spoofed by manually setting it in an instance's config.
 
-Note that a subject with no *interfaces*, *cert_common_names* and *usernames* is valid, and matches all Zenoh instances (wildcard).
+Note that a subject with no sub-fields (except the **id** which is mandatory) is valid, and matches all Zenoh instances (wildcard).
 
 Finally, the *policies* section allows to associate (i.e apply) rules to subjects. It is a list of JSON objects containing each a *rules* and *subjects* list, which respectively contain identifiers of declared rules and declared subjects to be associated.
 
-For example, in our sample config, the *default_permission* is set to deny and then the `"allow pub/sub on test/demo"` rule is added to explicitly allow certain behavior. Here, a node connecting via the `lo0` interface will be allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression for both incoming and outgoing messages. However, if there is a node trying to send another message type (eg: `query`), it will be denied. Additionally, nodes connected via any interface and authentified with one of the listed usernames in the `"usernames on any interface"` subject are also allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression. This provides a granular access control over permissions, ensuring that only authorized devices or networks can perform allowed behavior. 
+For example, in our sample config, the *default_permission* is set to deny and then the `"allow pub/sub on test/demo"` rule is added to explicitly allow certain behavior. Here, a node connecting via the `lo0` interface will be allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression for both incoming and outgoing messages. However, if there is a node trying to send another message type (eg: `query`), it will be denied. Additionally, nodes connected via any interface and authenticated with one of the listed usernames in the `"usernames on any interface"` subject are also allowed to `put`, `delete` and `declare_subscriber` on the `test/demo` key expression. This provides a granular access control over permissions, ensuring that only authorized devices or networks can perform allowed behavior. 
 
-Internally, for each combination of *subject_combination* + *flow* + *message*  (example:`Interface("l0")`+`"egress"`+`"put"`) parsed from the config, we construct *allow* and *deny* KeTrees (key-expression tries). The *allow* KeTree is built using all the key-expressions provided in the config on which that *subject* is allowed to perform that *action* on a particular *flow*. On receiving an authorization request, the key-expression in the request is matched against the appropriate KeTrees to confirm authorization.
+Internally, for each combination of *subject_combination* + *flow* + *message* (example:`Interface("l0")`+`"egress"`+`"put"`) parsed from the config, we construct *allow* and *deny* KeTrees (key-expression tries). The *allow* KeTree is built using all the key-expressions provided in the config on which that *subject* is allowed to perform that *action* on a particular *flow*. On receiving an authorization request, the key-expression in the request is matched against the appropriate KeTrees to confirm authorization.
 
 ## Subject combinations
 
@@ -101,7 +105,7 @@ Subjects are mainly comprised of three lists of characteristics to be matched: *
 - Two items within the same list are considered a logical OR
 - Two items across different lists are considered a logical AND
 
-These rules are built based on the assumption that an individual message on which ACL rules are to be applied can only travel across one network interface, from/to an instance authentified with at most one certificate common name, and one username.
+These rules are built based on the assumption that an individual message on which ACL rules are to be applied can only travel across one network interface, from/to an instance authenticated with at most one certificate common name, and one username.
 
 To produce all combinations that characterize a subject configuration based on the rules of construction noted above, the Cartesian product of the *interfaces*, *cert_common_names* and *usernames* lists is calculated. The following is an example of a subject configurations and its internal representation.
 
@@ -161,9 +165,14 @@ fn is_allowed(key_expr) -> decision {
 }
 ```
 
+The logic described above runs for each subject combination matching the transport on which the message is being evaluated, allowing the message to pass as soon as one combination returns an `allow` decision
+(and therefore dropping the message if and only if all matching subject combinations evaluate to `deny`). This logic is motivated by the reasoning that if at least one matching subject gives the transport the necessary permission,
+then it should be allowed to perform said operation. Note that no distinction is made, at this level, between default permissions and explicit permissions: a default permission `allow` can take priority over an explicit `deny`
+when the decisions apply on different subject combinations that match the transport in question.
+
 ## Key-Expression Matching
 
-All requests are macthed on keys and key expressions (for more information on key expressions, check out [Key_Expressions](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Expressions.md)). Therefore, it is important to understand how the key-expression matching works, since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *included in* (*equal to* or *subset of*) the key-expressions specified in the KeTree. A partial match or being a superset will not result in a match.
+All requests are matched on keys and key expressions (for more information on key expressions, check out [Key_Expressions](https://github.com/eclipse-zenoh/roadmap/blob/main/rfcs/ALL/Key%20Expressions.md)). Therefore, it is important to understand how the key-expression matching works, since it ultimately decides the behavior of the access control logic. In matching a key-expression against a KeTree, it will match as a positive only if it is *included in* (*equal to* or *subset of*) the key-expressions specified in the KeTree. A partial match or being a superset will not result in a match.
 
 The following table demonstrates how the matching will work on a key-expression(KE) in request and in the list of rules:
 
