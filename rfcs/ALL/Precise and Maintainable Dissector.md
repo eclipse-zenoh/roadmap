@@ -5,9 +5,9 @@
 
 ## Background
 
-[eclipse-zenoh/zenoh-dissector] was originally written in pure Lua by @cguimaraes (October 2022)—see
+[eclipse-zenoh/zenoh-dissector] was originally written in pure Lua by [@cguimaraes] (October 2022)—see
 the ['The Blue Dragon meets the Wire’s Shark'] blog post—and it would remain as such up until the
-release of Zenoh 1.0 (September 2023) where @YuanYuYuan rewrites the codebase in commit
+release of Zenoh 1.0 (September 2023) where [@YuanYuYuan] rewrites the codebase in commit
 [06c07d5](https://github.com/eclipse-zenoh/zenoh-dissector/commit/06c07d5cde1cfe2c792b7c5382353d5efe69b860)
 to leverage Rust, [zenoh-codec] and the [epan-sys] libwireshark bindings.
 
@@ -27,9 +27,9 @@ properly highlight packet bytes for the various Zenoh protocol tree fields and b
 
 ## Status quo
 
-In April 2025 user @Hugal31 would announce a new Zenoh dissector: [Hugal31/zenoh-c-dissector] whith
+In April 2025 user [@Hugal31] would announce a new Zenoh dissector: [Hugal31/zenoh-c-dissector] whith
 the goal of supporting field-to-byte mapping, key-expression resolution and reply-to-query mapping.
-@Hugal31 would explain that zenoh-dissector's reliance on zenoh-codec meant that field-to-byte
+[@Hugal31] would explain that zenoh-dissector's reliance on zenoh-codec meant that field-to-byte
 mapping was not possible, and that the epan-sys interface made it more difficult to access Wireshark
 API.
 
@@ -37,7 +37,7 @@ As the name suggests, zenoh-c-dissector is written in both C and Lua. Many disse
 implemented in C in addition to uncompression support which utilizes liblz4. zenoh-c-dissector also
 includes support for the Zenoh scouting protocol.
 
-A year later, in April 2026, @kydos would build the third Zenoh dissector, [kydos/zenoh-wireshark].
+A year later, in April 2026, [@kydos] would build the third Zenoh dissector, [kydos/zenoh-wireshark].
 Similarly to zenoh-c-dissector, zenoh-wireshark bypasses zenoh-codec to implement full field-to-byte
 mapping. zenoh-wireshark also circles back to zenoh-dissector's original architecture and opts for a
 full Lua codebase. The result is a slower, more difficult to maintain but more feature rich and
@@ -86,3 +86,7 @@ Issues with filter name standardization are out of the scope of this RFC.
 [Hugal31/zenoh-c-dissector]: <https://github.com/Hugal31/zenoh-c-dissector>
 [kydos/zenoh-wireshark]: <https://github.com/kydos/zenoh-wireshark>
 [eclipse-zenoh/roadmap]: <https://github.com/eclipse-zenoh/roadmap>
+[@cguimaraes]: <https://github.com/cguimaraes>
+[@YuanYuYuan]: <https://github.com/YuanYuYuan>
+[@Hugal31]: <https://github.com/Hugal31>
+[@kydos]: <https://github.com/kydos>
