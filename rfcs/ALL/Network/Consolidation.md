@@ -31,7 +31,7 @@ The means by which the user may specify *where* consolidation happens are still 
 ## Automatic consolidation
 The user may also *not* select any consolidation mode, which some languages may expose as a fake `Auto` mode, while others may simply expose the mode as an optional value and consider the absence of a value the selection of the automatic mode.
 
-Automatic consolidation mode will resolve to the *Latest* mode, unless the selector for the query contains a [`_time`](../Selector/_time.md) argument, which hints at a time-series query which will use the *None* mode instead.
+Automatic consolidation mode will resolve to the *Latest* mode, unless the selector for the query contains a [`_time`](../Selectors/_time.md) argument, which hints at a time-series query which will use the *None* mode instead.
 
 The automatically selected modes are liable to change on updates of the client library, but should only do so to provide more garantees.
 
