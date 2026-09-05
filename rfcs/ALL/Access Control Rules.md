@@ -201,6 +201,19 @@ For verbatims, the subpart of the key-expression starting with `@` has to be *ex
 If the match happens then the result will be as set in the explicit rules. If not, then the default permission will take over. For example, if the default permission is `allow` and the key-expressions in the *explicit deny* rules are any of the key-expressions like `test/demo/a` , `test/demo/*` or `test/demo/**` then a request on `test/demo/a` will match with the *explicit deny* KeTree and will be denied. However, given the same list of rules, a request on `test/**` will not match (since it is a superset) and therefore the request will be allowed to go through. Therefore, extra care needs to be taken while devising the rules, and especially so when using wildcards.
 
 
+## What a rule is matched against
+
+A rule is matched against the key expression carried by the message being filtered, and not against the resources that message may reach.
+
+This matters most for queries and replies, which are filtered as separate message types:
+
+* A `query` rule is matched against the key expression written by the querier. It controls which queries a subject may send, not which queryables those queries may reach.
+* A `reply` rule is matched against the key expression of the reply itself, which is the key of the resource that answered.
+
+Combined with the superset behaviour described above, this has a consequence worth spelling out. Take a *default_permission* of `deny`, an allow rule on `demo/**` covering `declare_queryable`, `query` and `reply`, and a deny rule on `demo/secret/**` that lists only `query`. A query on `demo/**` is allowed, since `demo/**` is a superset of `demo/secret/**` and so does not match the deny rule. It reaches a queryable declared on `demo/secret/x`, and the resulting reply carries the key `demo/secret/x`, which the allow rule admits and which the deny rule does not cover, because that rule does not list `reply`. Adding `reply` to the deny rule stops it.
+
+The same separation applies on the publication side: `declare_subscriber` controls which subscriptions may be declared, while `put` and `delete` control the data itself.
+
 ## Performance
 
 Given Zenoh's priority is performance, a lot of care was taken while adding access control features to the codebase, to keep the performance as high as possible. However, as with any other piece of software, security comes with a price in terms of performance. Having done multiple tests, we can share some tips to improve performance:
